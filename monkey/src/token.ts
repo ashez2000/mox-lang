@@ -5,6 +5,14 @@ export enum TokenType {
   INT = 'INT',
   ASSIGN = 'ASSIGN',
   PLUS = 'PLUS',
+  MINUS = 'MINUS',
+  BANG = 'BANG',
+  ASTERISK = 'ASTERISK',
+  SLASH = 'SLASH',
+  LT = 'LT',
+  GT = 'GT',
+  EQ = 'EQ',
+  NE = 'NE',
   COMMA = 'COMMA',
   SEMICOLON = 'SEMICOLON',
   LPAREN = 'LPAREN',
@@ -13,6 +21,11 @@ export enum TokenType {
   RBRACE = 'RBRACE',
   FUNCTION = 'FUNCTION',
   LET = 'LET',
+  TRUE = 'TRUE',
+  FALSE = 'FALSE',
+  IF = 'IF',
+  ELSE = 'ELSE',
+  RETURN = 'RETURN',
 }
 
 export class Token {

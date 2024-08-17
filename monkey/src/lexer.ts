@@ -22,6 +22,8 @@ export class Lexer {
   nextToken(): Token {
     let tok = Token.new(TokenType.EOF, '\0')
 
+    this.skipWhitespace()
+
     switch (this.ch) {
       case '=':
         tok = Token.new(TokenType.ASSIGN, this.ch)
@@ -51,6 +53,19 @@ export class Lexer {
       case '\0':
         tok = Token.new(TokenType.EOF, this.ch)
         break
+
+      default:
+        if (isLetter(this.ch)) {
+          tok.literal = this.readIdentifier()
+          tok.type = keywords.get(tok.literal) ?? TokenType.IDENT
+          return tok
+        } else if (isDigit(this.ch)) {
+          tok.literal = this.readNumber()
+          tok.type = TokenType.INT
+          return tok
+        } else {
+          tok = Token.new(TokenType.ILLEGAL, this.ch)
+        }
     }
 
     this.readChar()
@@ -67,4 +82,44 @@ export class Lexer {
     this.position = this.readPosition
     this.readPosition += 1
   }
+
+  private readIdentifier(): string {
+    const position = this.position
+    while (isLetter(this.ch)) {
+      this.readChar()
+    }
+    return this.input.slice(position, this.position)
+  }
+
+  private readNumber(): string {
+    const position = this.position
+    while (isDigit(this.ch)) {
+      this.readChar()
+    }
+    return this.input.slice(position, this.position)
+  }
+
+  private skipWhitespace() {
+    while (
+      this.ch == ' ' ||
+      this.ch == '\n' ||
+      this.ch == '\t' ||
+      this.ch == '\r'
+    ) {
+      this.readChar()
+    }
+  }
+}
+
+const keywords = new Map<string, TokenType>([
+  ['fn', TokenType.FUNCTION],
+  ['let', TokenType.LET],
+])
+
+function isLetter(ch: string): boolean {
+  return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_'
+}
+
+function isDigit(ch: string): boolean {
+  return ch >= '0' && ch <= '9'
 }
