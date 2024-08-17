@@ -1,0 +1,7 @@
+{
+  "name": "monkey-lang-ts",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "npm start --prefix monkey"
+  }
+}
