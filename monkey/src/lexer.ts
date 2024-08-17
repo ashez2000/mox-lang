@@ -26,7 +26,20 @@ export class Lexer {
 
     switch (this.ch) {
       case '=':
-        tok = Token.new(TokenType.ASSIGN, this.ch)
+        if (this.peekChar() == '=') {
+          this.readChar()
+          tok = Token.new(TokenType.EQ, '==')
+        } else {
+          tok = Token.new(TokenType.ASSIGN, this.ch)
+        }
+        break
+      case '!':
+        if (this.peekChar() == '=') {
+          this.readChar()
+          tok = Token.new(TokenType.NE, '!=')
+        } else {
+          tok = Token.new(TokenType.BANG, this.ch)
+        }
         break
       case ';':
         tok = Token.new(TokenType.SEMICOLON, this.ch)
@@ -49,7 +62,21 @@ export class Lexer {
       case '+':
         tok = Token.new(TokenType.PLUS, this.ch)
         break
-
+      case '-':
+        tok = Token.new(TokenType.MINUS, this.ch)
+        break
+      case '*':
+        tok = Token.new(TokenType.ASTERISK, this.ch)
+        break
+      case '<':
+        tok = Token.new(TokenType.LT, this.ch)
+        break
+      case '>':
+        tok = Token.new(TokenType.GT, this.ch)
+        break
+      case '/':
+        tok = Token.new(TokenType.SLASH, this.ch)
+        break
       case '\0':
         tok = Token.new(TokenType.EOF, this.ch)
         break
@@ -83,6 +110,13 @@ export class Lexer {
     this.readPosition += 1
   }
 
+  private peekChar(): string {
+    if (this.readPosition >= this.input.length) {
+      return '\0'
+    }
+    return this.input[this.readPosition]
+  }
+
   private readIdentifier(): string {
     const position = this.position
     while (isLetter(this.ch)) {
@@ -114,6 +148,11 @@ export class Lexer {
 const keywords = new Map<string, TokenType>([
   ['fn', TokenType.FUNCTION],
   ['let', TokenType.LET],
+  ['true', TokenType.TRUE],
+  ['false', TokenType.FALSE],
+  ['if', TokenType.IF],
+  ['else', TokenType.ELSE],
+  ['return', TokenType.RETURN],
 ])
 
 function isLetter(ch: string): boolean {

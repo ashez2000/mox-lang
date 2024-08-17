@@ -10,6 +10,15 @@ test('test nextToken', () => {
     let ten = 10;
     let add = fn (x, y) { x + y; };
     let result = add(five, ten);
+
+    !-/*5;
+    5 < 10 > 5;
+
+    if (5 < 10) { return true; }
+    else { return false; }
+
+    10 == 10;
+    10 != 9;
   `
 
   const tests = [
@@ -56,6 +65,55 @@ test('test nextToken', () => {
     /* 33 */ Token.new(TokenType.IDENT, 'ten'),
     /* 34 */ Token.new(TokenType.RPAREN, ')'),
     /* 35 */ Token.new(TokenType.SEMICOLON, ';'),
+
+    // !-/*5;
+    /* 36 */ Token.new(TokenType.BANG, '!'),
+    /* 37 */ Token.new(TokenType.MINUS, '-'),
+    /* 38 */ Token.new(TokenType.SLASH, '/'),
+    /* 39 */ Token.new(TokenType.ASTERISK, '*'),
+    /* 40 */ Token.new(TokenType.INT, '5'),
+    /* 41 */ Token.new(TokenType.SEMICOLON, ';'),
+
+    // 5 < 10 > 5;
+    /* 42 */ Token.new(TokenType.INT, '5'),
+    /* 43 */ Token.new(TokenType.LT, '<'),
+    /* 44 */ Token.new(TokenType.INT, '10'),
+    /* 45 */ Token.new(TokenType.GT, '>'),
+    /* 46 */ Token.new(TokenType.INT, '5'),
+    /* 47 */ Token.new(TokenType.SEMICOLON, ';'),
+
+    // if (5 < 10) { return true; }
+    /* 48 */ Token.new(TokenType.IF, 'if'),
+    /* 49 */ Token.new(TokenType.LPAREN, '('),
+    /* 50 */ Token.new(TokenType.INT, '5'),
+    /* 51 */ Token.new(TokenType.LT, '<'),
+    /* 52 */ Token.new(TokenType.INT, '10'),
+    /* 53 */ Token.new(TokenType.RPAREN, ')'),
+    /* 54 */ Token.new(TokenType.LBRACE, '{'),
+    /* 55 */ Token.new(TokenType.RETURN, 'return'),
+    /* 56 */ Token.new(TokenType.TRUE, 'true'),
+    /* 57 */ Token.new(TokenType.SEMICOLON, ';'),
+    /* 58 */ Token.new(TokenType.RBRACE, '}'),
+
+    // else { return false; }
+    /* 59 */ Token.new(TokenType.ELSE, 'else'),
+    /* 60 */ Token.new(TokenType.LBRACE, '{'),
+    /* 61 */ Token.new(TokenType.RETURN, 'return'),
+    /* 62 */ Token.new(TokenType.FALSE, 'false'),
+    /* 63 */ Token.new(TokenType.SEMICOLON, ';'),
+    /* 64 */ Token.new(TokenType.RBRACE, '}'),
+
+    // 10 == 10;
+    /* 65 */ Token.new(TokenType.INT, '10'),
+    /* 66 */ Token.new(TokenType.EQ, '=='),
+    /* 67 */ Token.new(TokenType.INT, '10'),
+    /* 68 */ Token.new(TokenType.SEMICOLON, ';'),
+
+    //  10 != 9;
+    /* 69 */ Token.new(TokenType.INT, '10'),
+    /* 70 */ Token.new(TokenType.NE, '!='),
+    /* 71 */ Token.new(TokenType.INT, '9'),
+    /* 72 */ Token.new(TokenType.SEMICOLON, ';'),
   ]
 
   const lexer = Lexer.new(input)
