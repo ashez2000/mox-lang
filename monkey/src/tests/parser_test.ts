@@ -16,6 +16,7 @@ test('test parseLetStatement', () => {
   const parser = Parser.new(lexer)
 
   const statements = parser.parse()
+  checkParserErrors(parser)
   assert.equal(statements.length, 3, `Expected 3 statements, got=${statements.length}`)
 
   for (let i = 0; i < 3; i++) {
@@ -35,6 +36,7 @@ test('test parseReturnStatement', () => {
   const parser = Parser.new(lexer)
 
   const statements = parser.parse()
+  checkParserErrors(parser)
   assert.equal(statements.length, 3, `Expected 3 statements, got=${statements.length}`)
 
   for (let i = 0; i < 3; i++) {
@@ -50,6 +52,7 @@ test('test parseIdentifier', () => {
   const parser = Parser.new(lexer)
 
   const statements = parser.parse()
+  checkParserErrors(parser)
   assert.equal(statements.length, 1, `Expected 1 statements, got=${statements.length}`)
 
   const stmt = statements[0]
@@ -67,6 +70,7 @@ test('test parseInteger', () => {
   const parser = Parser.new(lexer)
 
   const statements = parser.parse()
+  checkParserErrors(parser)
   assert.equal(statements.length, 1, `Expected 1 statements, got=${statements.length}`)
 
   const stmt = statements[0]
@@ -87,6 +91,7 @@ test('test parsePrefixExpreesion', () => {
     const parser = Parser.new(lexer)
 
     const statements = parser.parse()
+    checkParserErrors(parser)
     assert.equal(statements.length, 1, `Expected 1 statements, got=${statements.length}`)
 
     const stmt = statements[0]
@@ -102,6 +107,14 @@ test('test parsePrefixExpreesion', () => {
 //
 // Test Util
 //
+
+function checkParserErrors(parser: Parser) {
+  if (parser.errors.length === 0) return
+  for (const e of parser.errors) {
+    console.log(e)
+  }
+  assert.fail('Parser has errors')
+}
 
 function testIntegerExpr(expr: Expr, value: number) {
   assert(expr instanceof Integer)

@@ -12,10 +12,13 @@ export class Parser {
   private prefixParseFns: Map<TokenType, PrefixParseFn>
   private infixParseFns: Map<TokenType, InfixParseFn>
 
+  public errors: string[]
+
   private constructor(lexer: Lexer) {
     this.lexer = lexer
-    this.curToken = Token.new(TokenType.EOF, '\0')
-    this.peekToken = Token.new(TokenType.EOF, '\0')
+    this.curToken = Token.new(TokenType.EOF, '\0', 0)
+    this.peekToken = Token.new(TokenType.EOF, '\0', 0)
+    this.errors = []
 
     this.prefixParseFns = new Map([
       [TokenType.IDENT, this.parseIdentifier.bind(this)],
@@ -117,6 +120,7 @@ export class Parser {
   private parseExpression(): Expr | null {
     const prefix = this.prefixParseFns.get(this.curToken.type)
     if (!prefix) {
+      this.noPrifixParseFnError()
       return null
     }
 
@@ -164,6 +168,11 @@ export class Parser {
       this.nextToken()
       return true
     }
+    this.errors.push(`[line ${this.peekToken.line}]: Expected peek token to be ${type}, got ${this.peekToken.type}`)
     return false
+  }
+
+  private noPrifixParseFnError() {
+    this.errors.push(`[line ${this.curToken.line}]: No prefix parse fn found for ${this.curToken.type}`)
   }
 }
