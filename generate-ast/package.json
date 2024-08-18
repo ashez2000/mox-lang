@@ -1,0 +1,13 @@
+{
+  "name": "generate-ast",
+  "version": "1.0.0",
+  "scripts": {
+    "generate": "tsx ./src/main.ts"
+  },
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.4",
+    "@types/node": "^22.2.0",
+    "tsx": "^4.17.0",
+    "typescript": "^5.5.4"
+  }
+}
