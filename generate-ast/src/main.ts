@@ -20,6 +20,7 @@ function main(args: string[]) {
     'Identifier - name: Token, value: string',
     'Integer    - token: Token, value: number',
     'Prefix     - token: Token, operator: string, right: Expr',
+    'Infix      - token: Token, operator: string, left: Expr, right: Expr',
   ])
 
   fs.writeFileSync(outputDir + '/ast.ts', imports + stmt + expr)

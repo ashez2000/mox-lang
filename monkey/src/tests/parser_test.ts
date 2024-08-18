@@ -3,7 +3,7 @@ import { strict as assert } from 'node:assert'
 
 import { Parser } from '../parser.js'
 import { Lexer } from '../lexer.js'
-import { Expr, Expression, Identifier, Integer, Let, Prefix, Return, Stmt } from '../ast.js'
+import { Expr, Expression, Identifier, Infix, Integer, Let, Prefix, Return, Stmt } from '../ast.js'
 
 test('test parseLetStatement', () => {
   const input = `
@@ -79,6 +79,36 @@ test('test parsePrefixExpreesion', () => {
     assert(prefix instanceof Prefix)
     assert.equal(prefix.operator, t.operator)
     testIntegerExpr(prefix.right, t.value)
+  }
+})
+
+test('test parseInfixExpression', () => {
+  const tests = [
+    { input: '5 + 5', operator: '+', left: 5, right: 5 },
+    { input: '5 - 5', operator: '-', left: 5, right: 5 },
+    { input: '5 * 5', operator: '*', left: 5, right: 5 },
+    { input: '5 / 5', operator: '/', left: 5, right: 5 },
+    { input: '5 < 5', operator: '<', left: 5, right: 5 },
+    { input: '5 > 5', operator: '>', left: 5, right: 5 },
+    { input: '5 == 5', operator: '==', left: 5, right: 5 },
+    { input: '5 != 5', operator: '!=', left: 5, right: 5 },
+  ]
+
+  for (let i = 0; i < tests.length; i++) {
+    const t = tests[i]
+    const expectedStatements = 1
+    const statements = testProgram(t.input, expectedStatements)
+
+    const stmt = statements[0]
+    console.log(stmt)
+    assert(stmt instanceof Expression)
+
+    const infix = stmt.expr
+    assert(infix instanceof Infix)
+
+    assert.equal(infix.operator, t.operator)
+    testIntegerExpr(infix.left, t.left)
+    testIntegerExpr(infix.right, t.right)
   }
 })
 

@@ -1,6 +1,7 @@
-import { Expr, Expression, Identifier, Integer, Let, Prefix, Return, Stmt } from './ast'
+import { Expr, Expression, Identifier, Infix, Integer, Let, Prefix, Return, Stmt } from './ast'
 import { Lexer } from './lexer'
 import { Token, TokenType } from './token'
+import { PrecedenceLevel, precedences } from './precedence'
 
 type PrefixParseFn = () => Expr
 type InfixParseFn = (left: Expr) => Expr
@@ -27,7 +28,16 @@ export class Parser {
       [TokenType.MINUS, this.parsePrefixExpression.bind(this)],
     ])
 
-    this.infixParseFns = new Map()
+    this.infixParseFns = new Map([
+      [TokenType.PLUS, this.parseInfixExpression.bind(this)],
+      [TokenType.MINUS, this.parseInfixExpression.bind(this)],
+      [TokenType.SLASH, this.parseInfixExpression.bind(this)],
+      [TokenType.ASTERISK, this.parseInfixExpression.bind(this)],
+      [TokenType.EQ, this.parseInfixExpression.bind(this)],
+      [TokenType.NE, this.parseInfixExpression.bind(this)],
+      [TokenType.LT, this.parseInfixExpression.bind(this)],
+      [TokenType.GT, this.parseInfixExpression.bind(this)],
+    ])
   }
 
   static new(lexer: Lexer): Parser {
@@ -102,8 +112,9 @@ export class Parser {
 
   // <expr>;
   private parseExpressionStatement(): Stmt | null {
-    const expr = this.parseExpression()
+    const expr = this.parseExpression(PrecedenceLevel.LOWEST)
 
+    // optional semicolon after expression
     if (this.peekTokenIs(TokenType.SEMICOLON)) {
       this.nextToken()
     }
@@ -116,15 +127,28 @@ export class Parser {
   // Expr
   //
 
-  // TODO: deal with this null case
-  private parseExpression(): Expr | null {
+  // core logic of Pratt Parser aka (Top Down Operator Precedence Parser)
+  private parseExpression(precedence: PrecedenceLevel): Expr | null {
+    // curToken points to start of expression
     const prefix = this.prefixParseFns.get(this.curToken.type)
     if (!prefix) {
       this.noPrifixParseFnError()
       return null
     }
 
-    const leftExpr = prefix()
+    let leftExpr = prefix()
+
+    while (!this.peekTokenIs(TokenType.SEMICOLON) && precedence < this.peekPrecedence()) {
+      const infix = this.infixParseFns.get(this.peekToken.type)
+      if (!infix) {
+        return leftExpr
+      }
+
+      // curToken becomes the operator
+      this.nextToken()
+      leftExpr = infix(leftExpr)
+    }
+
     return leftExpr
   }
 
@@ -138,12 +162,24 @@ export class Parser {
   }
 
   private parsePrefixExpression(): Expr {
+    // curToken points to prefix operator
     const operatorToken = this.curToken
     this.nextToken()
 
     // TODO: handle null case
-    const right = this.parseExpression()
+    const right = this.parseExpression(PrecedenceLevel.PREFIX)
     return new Prefix(operatorToken, operatorToken.literal, right!)
+  }
+
+  private parseInfixExpression(left: Expr): Expr {
+    // curToken points to infix operator
+    const operatorToken = this.curToken
+    const precedence = this.curPrecedence()
+
+    this.nextToken()
+    const right = this.parseExpression(precedence)
+
+    return new Infix(operatorToken, operatorToken.literal, left, right!)
   }
 
   //
@@ -174,5 +210,13 @@ export class Parser {
 
   private noPrifixParseFnError() {
     this.errors.push(`[line ${this.curToken.line}]: No prefix parse fn found for ${this.curToken.type}`)
+  }
+
+  private peekPrecedence(): PrecedenceLevel {
+    return precedences.get(this.peekToken.type) ?? PrecedenceLevel.LOWEST
+  }
+
+  private curPrecedence(): PrecedenceLevel {
+    return precedences.get(this.curToken.type) ?? PrecedenceLevel.LOWEST
   }
 }
