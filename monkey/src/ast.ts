@@ -70,6 +70,7 @@ export interface ExprVisitor<T> {
   visitPrefixExpr(expr: Prefix): T
   visitInfixExpr(expr: Infix): T
   visitIfExpr(expr: If): T
+  visitFnExpr(expr: Fn): T
 }
 
 export class Identifier extends Expr {
@@ -129,5 +130,15 @@ export class If extends Expr {
 
   accept<T>(visitor: ExprVisitor<T>): T {
     return visitor.visitIfExpr(this)
+  }
+}
+
+export class Fn extends Expr {
+  constructor(public token: Token, public parameters: Identifier[], public body: Block) {
+    super()
+  }
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitFnExpr(this)
   }
 }

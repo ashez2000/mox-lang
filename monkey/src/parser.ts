@@ -1,4 +1,4 @@
-import { Block, Bool, Expr, Expression, Identifier, If, Infix, Integer, Let, Prefix, Return, Stmt } from './ast'
+import { Block, Bool, Expr, Expression, Fn, Identifier, If, Infix, Integer, Let, Prefix, Return, Stmt } from './ast'
 import { Lexer } from './lexer'
 import { Token, TokenType } from './token'
 import { PrecedenceLevel, precedences } from './precedence'
@@ -30,6 +30,7 @@ export class Parser {
       [TokenType.MINUS, this.parsePrefixExpression.bind(this)],
       [TokenType.LPAREN, this.parseGroupedExpression.bind(this)],
       [TokenType.IF, this.parseIfExpression.bind(this)],
+      [TokenType.FUNCTION, this.parseFn.bind(this)],
     ])
 
     this.infixParseFns = new Map([
@@ -156,7 +157,7 @@ export class Parser {
     return leftExpr
   }
 
-  private parseIdentifier(): Expr {
+  private parseIdentifier(): Identifier {
     return new Identifier(this.curToken, this.curToken.literal)
   }
 
@@ -248,6 +249,51 @@ export class Parser {
 
     // TODO: nulls
     return new If(ifToken, cond!, thenBlock, elseBlock)
+  }
+
+  private parseFn(): Expr | null {
+    const fnToken = this.curToken
+
+    if (!this.peekTokenIs(TokenType.LPAREN)) {
+      return null
+    }
+
+    const params = this.parseFnParams()
+
+    if (!this.peekTokenIs(TokenType.LBRACE)) {
+      return null
+    }
+
+    const body = this.parseBlock()
+
+    return new Fn(fnToken, params as any, body)
+  }
+
+  private parseFnParams(): Identifier[] | null {
+    const idents: Identifier[] = []
+
+    if (this.peekTokenIs(TokenType.RPAREN)) {
+      this.nextToken()
+      return idents
+    }
+
+    this.nextToken()
+
+    const ident = this.parseIdentifier()
+    idents.push(ident)
+
+    while (this.peekTokenIs(TokenType.COMMA)) {
+      this.nextToken()
+      this.nextToken()
+      const ident = this.parseIdentifier()
+      idents.push(ident)
+    }
+
+    if (!this.peekTokenIs(TokenType.LBRACE)) {
+      return null
+    }
+
+    return idents
   }
 
   //

@@ -24,6 +24,7 @@ function main(args: string[]) {
     'Prefix     - token: Token, operator: string, right: Expr',
     'Infix      - token: Token, operator: string, left: Expr, right: Expr',
     'If         - token: Token, condidtion: Expr, thenBlock: Block, elseBlock: Block | null',
+    'Fn         - token: Token, parameters: Identifier[], body: Block',
   ])
 
   fs.writeFileSync(outputDir + '/ast.ts', imports + stmt + expr)
