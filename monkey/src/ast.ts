@@ -54,6 +54,7 @@ export abstract class Expr {
 
 export interface ExprVisitor<T> {
   visitIdentifierExpr(expr: Identifier): T
+  visitBoolExpr(expr: Bool): T
   visitIntegerExpr(expr: Integer): T
   visitPrefixExpr(expr: Prefix): T
   visitInfixExpr(expr: Infix): T
@@ -66,6 +67,16 @@ export class Identifier extends Expr {
 
   accept<T>(visitor: ExprVisitor<T>): T {
     return visitor.visitIdentifierExpr(this)
+  }
+}
+
+export class Bool extends Expr {
+  constructor(public token: Token, public value: boolean) {
+    super()
+  }
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitBoolExpr(this)
   }
 }
 

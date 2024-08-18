@@ -1,4 +1,4 @@
-import { Expr, Expression, Identifier, Infix, Integer, Let, Prefix, Return, Stmt } from './ast'
+import { Bool, Expr, Expression, Identifier, Infix, Integer, Let, Prefix, Return, Stmt } from './ast'
 import { Lexer } from './lexer'
 import { Token, TokenType } from './token'
 import { PrecedenceLevel, precedences } from './precedence'
@@ -24,6 +24,8 @@ export class Parser {
     this.prefixParseFns = new Map([
       [TokenType.IDENT, this.parseIdentifier.bind(this)],
       [TokenType.INT, this.parseInteger.bind(this)],
+      [TokenType.TRUE, this.parseBool.bind(this)],
+      [TokenType.FALSE, this.parseBool.bind(this)],
       [TokenType.BANG, this.parsePrefixExpression.bind(this)],
       [TokenType.MINUS, this.parsePrefixExpression.bind(this)],
     ])
@@ -159,6 +161,11 @@ export class Parser {
   private parseInteger(): Expr {
     // TODO: handle parseInt error
     return new Integer(this.curToken, parseInt(this.curToken.literal))
+  }
+
+  private parseBool(): Expr {
+    const value = this.curToken.literal == 'true' ? true : false
+    return new Bool(this.curToken, value)
   }
 
   private parsePrefixExpression(): Expr {

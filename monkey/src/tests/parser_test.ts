@@ -3,7 +3,7 @@ import { strict as assert } from 'node:assert'
 
 import { Parser } from '../parser.js'
 import { Lexer } from '../lexer.js'
-import { Expr, Expression, Identifier, Infix, Integer, Let, Prefix, Return, Stmt } from '../ast.js'
+import { Bool, Expr, Expression, Identifier, Infix, Integer, Let, Prefix, Return, Stmt } from '../ast.js'
 
 test('test parseLetStatement', () => {
   const input = `
@@ -61,6 +61,26 @@ test('test parseInteger', () => {
   testIntegerExpr(stmt.expr, 5)
 })
 
+test('test parseBool', () => {
+  const tests = [
+    { input: 'true;', value: true },
+    { input: 'false;', value: false },
+  ]
+
+  for (let i = 0; i < tests.length; i++) {
+    const t = tests[i]
+    const expectedStatements = 1
+    const statements = testProgram(t.input, expectedStatements)
+
+    const stmt = statements[0]
+    assert(stmt instanceof Expression)
+
+    const bool = stmt.expr
+    assert(bool instanceof Bool)
+    assert.equal(bool.value, t.value)
+  }
+})
+
 test('test parsePrefixExpreesion', () => {
   const tests = [
     { input: '!15;', operator: '!', value: 15 },
@@ -100,7 +120,6 @@ test('test parseInfixExpression', () => {
     const statements = testProgram(t.input, expectedStatements)
 
     const stmt = statements[0]
-    console.log(stmt)
     assert(stmt instanceof Expression)
 
     const infix = stmt.expr

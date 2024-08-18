@@ -18,6 +18,7 @@ function main(args: string[]) {
 
   const expr = defineAst('Expr', [
     'Identifier - name: Token, value: string',
+    'Bool       - token: Token, value: boolean',
     'Integer    - token: Token, value: number',
     'Prefix     - token: Token, operator: string, right: Expr',
     'Infix      - token: Token, operator: string, left: Expr, right: Expr',

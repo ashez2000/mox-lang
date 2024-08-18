@@ -2,7 +2,8 @@
   "name": "monkey",
   "version": "1.0.0",
   "scripts": {
-    "start": "tsx ./src/main.ts"
+    "start": "tsx ./src/main.ts",
+    "test": "tsx --test ./src/tests/*"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
