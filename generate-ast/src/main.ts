@@ -11,7 +11,8 @@ function main(args: string[]) {
   let imports = 'import {Token} from "./token.js"\n\n'
 
   const stmt = defineAst('Stmt', [
-    'Let - token: Token, name: Identifier, expr: Expr',
+    'Let    - token: Token, name: Identifier, expr: Expr',
+    'Return - token: Token, expr: Expr',
   ])
 
   const expr = defineAst('Expr', ['Identifier - name: Token, value: string'])

@@ -10,6 +10,7 @@ export abstract class Stmt {
 
 export interface StmtVisitor<T> {
   visitLetStmt(stmt: Let): T
+  visitReturnStmt(stmt: Return): T
 }
 
 export class Let extends Stmt {
@@ -19,6 +20,16 @@ export class Let extends Stmt {
 
   accept<T>(visitor: StmtVisitor<T>): T {
     return visitor.visitLetStmt(this)
+  }
+}
+
+export class Return extends Stmt {
+  constructor(public token: Token, public expr: Expr) {
+    super()
+  }
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitReturnStmt(this)
   }
 }
 
