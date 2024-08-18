@@ -11,6 +11,7 @@ export abstract class Stmt {
 export interface StmtVisitor<T> {
   visitLetStmt(stmt: Let): T
   visitReturnStmt(stmt: Return): T
+  visitExpressionStmt(stmt: Expression): T
 }
 
 export class Let extends Stmt {
@@ -33,6 +34,16 @@ export class Return extends Stmt {
   }
 }
 
+export class Expression extends Stmt {
+  constructor(public expr: Expr) {
+    super()
+  }
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitExpressionStmt(this)
+  }
+}
+
 //
 // Expr
 //
@@ -43,6 +54,7 @@ export abstract class Expr {
 
 export interface ExprVisitor<T> {
   visitIdentifierExpr(expr: Identifier): T
+  visitIntegerExpr(expr: Integer): T
 }
 
 export class Identifier extends Expr {
@@ -52,5 +64,15 @@ export class Identifier extends Expr {
 
   accept<T>(visitor: ExprVisitor<T>): T {
     return visitor.visitIdentifierExpr(this)
+  }
+}
+
+export class Integer extends Expr {
+  constructor(public token: Token, public value: number) {
+    super()
+  }
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitIntegerExpr(this)
   }
 }

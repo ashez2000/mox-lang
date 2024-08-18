@@ -1,16 +1,28 @@
-import { Identifier, Let, Return, Stmt } from './ast'
+import { Expr, Expression, Identifier, Integer, Let, Return, Stmt } from './ast'
 import { Lexer } from './lexer'
 import { Token, TokenType } from './token'
+
+type PrefixParseFn = () => Expr
+type InfixParseFn = (left: Expr) => Expr
 
 export class Parser {
   private lexer: Lexer
   private curToken: Token
   private peekToken: Token
+  private prefixParseFns: Map<TokenType, PrefixParseFn>
+  private infixParseFns: Map<TokenType, InfixParseFn>
 
   private constructor(lexer: Lexer) {
     this.lexer = lexer
     this.curToken = Token.new(TokenType.EOF, '\0')
     this.peekToken = Token.new(TokenType.EOF, '\0')
+
+    this.prefixParseFns = new Map([
+      [TokenType.IDENT, this.parseIdentifier.bind(this)],
+      [TokenType.INT, this.parseInteger.bind(this)],
+    ])
+
+    this.infixParseFns = new Map()
   }
 
   static new(lexer: Lexer): Parser {
@@ -34,6 +46,10 @@ export class Parser {
     return statements
   }
 
+  //
+  // Stmt
+  //
+
   private parseStatement(): Stmt | null {
     switch (this.curToken.type) {
       case TokenType.LET:
@@ -41,7 +57,7 @@ export class Parser {
       case TokenType.RETURN:
         return this.parseReturnStatement()
       default:
-        return null
+        return this.parseExpressionStatement()
     }
   }
 
@@ -78,6 +94,45 @@ export class Parser {
 
     return new Return(returnToken, {} as any)
   }
+
+  // <expr>;
+  private parseExpressionStatement(): Stmt | null {
+    const expr = this.parseExpression()
+
+    if (this.peekTokenIs(TokenType.SEMICOLON)) {
+      this.nextToken()
+    }
+
+    // TODO: how to deal with there null cases ???
+    return new Expression(expr!)
+  }
+
+  //
+  // Expr
+  //
+
+  private parseExpression(): Expr | null {
+    const prefix = this.prefixParseFns.get(this.curToken.type)
+    if (!prefix) {
+      return null
+    }
+
+    const leftExpr = prefix()
+    return leftExpr
+  }
+
+  private parseIdentifier(): Expr {
+    return new Identifier(this.curToken, this.curToken.literal)
+  }
+
+  private parseInteger(): Expr {
+    // TODO: handle parseInt error
+    return new Integer(this.curToken, parseInt(this.curToken.literal))
+  }
+
+  //
+  // Util
+  //
 
   private nextToken() {
     this.curToken = this.peekToken

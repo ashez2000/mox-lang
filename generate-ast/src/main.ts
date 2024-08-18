@@ -13,9 +13,10 @@ function main(args: string[]) {
   const stmt = defineAst('Stmt', [
     'Let    - token: Token, name: Identifier, expr: Expr',
     'Return - token: Token, expr: Expr',
+    'Expression - expr: Expr',
   ])
 
-  const expr = defineAst('Expr', ['Identifier - name: Token, value: string'])
+  const expr = defineAst('Expr', ['Identifier - name: Token, value: string', 'Integer - token: Token, value: number'])
 
   fs.writeFileSync(outputDir + '/ast.ts', imports + stmt + expr)
 }
