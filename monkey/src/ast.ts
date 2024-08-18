@@ -12,6 +12,7 @@ export interface StmtVisitor<T> {
   visitLetStmt(stmt: Let): T
   visitReturnStmt(stmt: Return): T
   visitExpressionStmt(stmt: Expression): T
+  visitBlockStmt(stmt: Block): T
 }
 
 export class Let extends Stmt {
@@ -44,6 +45,16 @@ export class Expression extends Stmt {
   }
 }
 
+export class Block extends Stmt {
+  constructor(public statements: Stmt[]) {
+    super()
+  }
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitBlockStmt(this)
+  }
+}
+
 //
 // Expr
 //
@@ -58,6 +69,7 @@ export interface ExprVisitor<T> {
   visitIntegerExpr(expr: Integer): T
   visitPrefixExpr(expr: Prefix): T
   visitInfixExpr(expr: Infix): T
+  visitIfExpr(expr: If): T
 }
 
 export class Identifier extends Expr {
@@ -107,5 +119,15 @@ export class Infix extends Expr {
 
   accept<T>(visitor: ExprVisitor<T>): T {
     return visitor.visitInfixExpr(this)
+  }
+}
+
+export class If extends Expr {
+  constructor(public token: Token, public condidtion: Expr, public thenBlock: Block, public elseBlock: Block | null) {
+    super()
+  }
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitIfExpr(this)
   }
 }

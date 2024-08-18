@@ -11,9 +11,10 @@ function main(args: string[]) {
   let imports = 'import {Token} from "./token.js"\n\n'
 
   const stmt = defineAst('Stmt', [
-    'Let    - token: Token, name: Identifier, expr: Expr',
-    'Return - token: Token, expr: Expr',
+    'Let        - token: Token, name: Identifier, expr: Expr',
+    'Return     - token: Token, expr: Expr',
     'Expression - expr: Expr',
+    'Block      - statements: Stmt[]',
   ])
 
   const expr = defineAst('Expr', [
@@ -22,6 +23,7 @@ function main(args: string[]) {
     'Integer    - token: Token, value: number',
     'Prefix     - token: Token, operator: string, right: Expr',
     'Infix      - token: Token, operator: string, left: Expr, right: Expr',
+    'If         - token: Token, condidtion: Expr, thenBlock: Block, elseBlock: Block | null',
   ])
 
   fs.writeFileSync(outputDir + '/ast.ts', imports + stmt + expr)

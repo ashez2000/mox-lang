@@ -1,4 +1,4 @@
-import { Bool, Expr, Expression, Identifier, Infix, Integer, Let, Prefix, Return, Stmt } from './ast'
+import { Block, Bool, Expr, Expression, Identifier, If, Infix, Integer, Let, Prefix, Return, Stmt } from './ast'
 import { Lexer } from './lexer'
 import { Token, TokenType } from './token'
 import { PrecedenceLevel, precedences } from './precedence'
@@ -29,6 +29,7 @@ export class Parser {
       [TokenType.BANG, this.parsePrefixExpression.bind(this)],
       [TokenType.MINUS, this.parsePrefixExpression.bind(this)],
       [TokenType.LPAREN, this.parseGroupedExpression.bind(this)],
+      [TokenType.IF, this.parseIfExpression.bind(this)],
     ])
 
     this.infixParseFns = new Map([
@@ -197,6 +198,56 @@ export class Parser {
     const right = this.parseExpression(precedence)
 
     return new Infix(operatorToken, operatorToken.literal, left, right!)
+  }
+
+  private parseBlock(): Block {
+    const stmts: Stmt[] = []
+
+    this.nextToken()
+
+    while (!this.curTokenIs(TokenType.RBRACE) && !this.curTokenIs(TokenType.EOF)) {
+      const stmt = this.parseStatement()
+      if (stmt != null) {
+        stmts.push(stmt)
+      }
+      this.nextToken()
+    }
+
+    return new Block(stmts)
+  }
+
+  private parseIfExpression(): Expr | null {
+    const ifToken = this.curToken
+
+    if (!this.expectPeek(TokenType.LPAREN)) {
+      return null
+    }
+
+    this.nextToken()
+
+    const cond = this.parseExpression(PrecedenceLevel.LOWEST)
+
+    if (!this.expectPeek(TokenType.RPAREN)) {
+      return null
+    }
+
+    if (!this.expectPeek(TokenType.LBRACE)) {
+      return null
+    }
+
+    const thenBlock = this.parseBlock()
+    let elseBlock: Block | null = null
+
+    if (this.peekTokenIs(TokenType.ELSE)) {
+      this.nextToken()
+      if (!this.expectPeek(TokenType.LBRACE)) {
+        return null
+      }
+      elseBlock = this.parseBlock()
+    }
+
+    // TODO: nulls
+    return new If(ifToken, cond!, thenBlock, elseBlock)
   }
 
   //
