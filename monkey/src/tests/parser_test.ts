@@ -3,7 +3,7 @@ import { strict as assert } from 'node:assert'
 
 import { Parser } from '../parser.js'
 import { Lexer } from '../lexer.js'
-import { Expr, Expression, Identifier, Integer, Let, Prefix, Return } from '../ast.js'
+import { Expr, Expression, Identifier, Integer, Let, Prefix, Return, Stmt } from '../ast.js'
 
 test('test parseLetStatement', () => {
   const input = `
@@ -12,12 +12,8 @@ test('test parseLetStatement', () => {
     let foobar = 838383;
   `
 
-  const lexer = Lexer.new(input)
-  const parser = Parser.new(lexer)
-
-  const statements = parser.parse()
-  checkParserErrors(parser)
-  assert.equal(statements.length, 3, `Expected 3 statements, got=${statements.length}`)
+  const expectedStatements = 3
+  const statements = testProgram(input, expectedStatements)
 
   for (let i = 0; i < 3; i++) {
     const stmt = statements[i]
@@ -32,12 +28,8 @@ test('test parseReturnStatement', () => {
     return 993322;
   `
 
-  const lexer = Lexer.new(input)
-  const parser = Parser.new(lexer)
-
-  const statements = parser.parse()
-  checkParserErrors(parser)
-  assert.equal(statements.length, 3, `Expected 3 statements, got=${statements.length}`)
+  const expectedStatements = 3
+  const statements = testProgram(input, expectedStatements)
 
   for (let i = 0; i < 3; i++) {
     const stmt = statements[i]
@@ -47,13 +39,8 @@ test('test parseReturnStatement', () => {
 
 test('test parseIdentifier', () => {
   const input = 'foobar;'
-
-  const lexer = Lexer.new(input)
-  const parser = Parser.new(lexer)
-
-  const statements = parser.parse()
-  checkParserErrors(parser)
-  assert.equal(statements.length, 1, `Expected 1 statements, got=${statements.length}`)
+  const expectedStatements = 1
+  const statements = testProgram(input, expectedStatements)
 
   const stmt = statements[0]
   assert(stmt instanceof Expression)
@@ -65,13 +52,8 @@ test('test parseIdentifier', () => {
 
 test('test parseInteger', () => {
   const input = '5;'
-
-  const lexer = Lexer.new(input)
-  const parser = Parser.new(lexer)
-
-  const statements = parser.parse()
-  checkParserErrors(parser)
-  assert.equal(statements.length, 1, `Expected 1 statements, got=${statements.length}`)
+  const expectedStatements = 1
+  const statements = testProgram(input, expectedStatements)
 
   const stmt = statements[0]
   assert(stmt instanceof Expression)
@@ -87,12 +69,8 @@ test('test parsePrefixExpreesion', () => {
 
   for (let i = 0; i < tests.length; i++) {
     const t = tests[i]
-    const lexer = Lexer.new(t.input)
-    const parser = Parser.new(lexer)
-
-    const statements = parser.parse()
-    checkParserErrors(parser)
-    assert.equal(statements.length, 1, `Expected 1 statements, got=${statements.length}`)
+    const expectedStatements = 1
+    const statements = testProgram(t.input, expectedStatements)
 
     const stmt = statements[0]
     assert(stmt instanceof Expression)
@@ -108,12 +86,26 @@ test('test parsePrefixExpreesion', () => {
 // Test Util
 //
 
-function checkParserErrors(parser: Parser) {
-  if (parser.errors.length === 0) return
-  for (const e of parser.errors) {
-    console.log(e)
+function testProgram(input: string, expectedStatements: number): Stmt[] {
+  const lexer = Lexer.new(input)
+  const parser = Parser.new(lexer)
+  const statements = parser.parse()
+
+  // check for parser errors
+  if (parser.errors.length != 0) {
+    for (const e of parser.errors) {
+      console.log(e)
+    }
+    assert.fail('Parser has errors')
   }
-  assert.fail('Parser has errors')
+
+  assert.equal(
+    statements.length,
+    expectedStatements,
+    `Expected ${expectedStatements} statements, got=${statements.length}`
+  )
+
+  return statements
 }
 
 function testIntegerExpr(expr: Expr, value: number) {
