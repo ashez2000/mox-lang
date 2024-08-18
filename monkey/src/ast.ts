@@ -55,6 +55,7 @@ export abstract class Expr {
 export interface ExprVisitor<T> {
   visitIdentifierExpr(expr: Identifier): T
   visitIntegerExpr(expr: Integer): T
+  visitPrefixExpr(expr: Prefix): T
 }
 
 export class Identifier extends Expr {
@@ -74,5 +75,15 @@ export class Integer extends Expr {
 
   accept<T>(visitor: ExprVisitor<T>): T {
     return visitor.visitIntegerExpr(this)
+  }
+}
+
+export class Prefix extends Expr {
+  constructor(public token: Token, public operator: string, public right: Expr) {
+    super()
+  }
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitPrefixExpr(this)
   }
 }

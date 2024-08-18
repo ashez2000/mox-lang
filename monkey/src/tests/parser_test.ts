@@ -3,7 +3,7 @@ import { strict as assert } from 'node:assert'
 
 import { Parser } from '../parser.js'
 import { Lexer } from '../lexer.js'
-import { Expression, Identifier, Integer, Let, Return } from '../ast.js'
+import { Expr, Expression, Identifier, Integer, Let, Prefix, Return } from '../ast.js'
 
 test('test parseLetStatement', () => {
   const input = `
@@ -72,7 +72,38 @@ test('test parseInteger', () => {
   const stmt = statements[0]
   assert(stmt instanceof Expression)
 
-  const ident = stmt.expr
-  assert(ident instanceof Integer)
-  assert.equal(ident.value, 5)
+  testIntegerExpr(stmt.expr, 5)
 })
+
+test('test parsePrefixExpreesion', () => {
+  const tests = [
+    { input: '!15;', operator: '!', value: 15 },
+    { input: '-15;', operator: '-', value: 15 },
+  ]
+
+  for (let i = 0; i < tests.length; i++) {
+    const t = tests[i]
+    const lexer = Lexer.new(t.input)
+    const parser = Parser.new(lexer)
+
+    const statements = parser.parse()
+    assert.equal(statements.length, 1, `Expected 1 statements, got=${statements.length}`)
+
+    const stmt = statements[0]
+    assert(stmt instanceof Expression)
+
+    const prefix = stmt.expr
+    assert(prefix instanceof Prefix)
+    assert.equal(prefix.operator, t.operator)
+    testIntegerExpr(prefix.right, t.value)
+  }
+})
+
+//
+// Test Util
+//
+
+function testIntegerExpr(expr: Expr, value: number) {
+  assert(expr instanceof Integer)
+  assert.equal(expr.value, value)
+}

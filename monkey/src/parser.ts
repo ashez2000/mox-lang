@@ -1,4 +1,4 @@
-import { Expr, Expression, Identifier, Integer, Let, Return, Stmt } from './ast'
+import { Expr, Expression, Identifier, Integer, Let, Prefix, Return, Stmt } from './ast'
 import { Lexer } from './lexer'
 import { Token, TokenType } from './token'
 
@@ -20,6 +20,8 @@ export class Parser {
     this.prefixParseFns = new Map([
       [TokenType.IDENT, this.parseIdentifier.bind(this)],
       [TokenType.INT, this.parseInteger.bind(this)],
+      [TokenType.BANG, this.parsePrefixExpression.bind(this)],
+      [TokenType.MINUS, this.parsePrefixExpression.bind(this)],
     ])
 
     this.infixParseFns = new Map()
@@ -111,6 +113,7 @@ export class Parser {
   // Expr
   //
 
+  // TODO: deal with this null case
   private parseExpression(): Expr | null {
     const prefix = this.prefixParseFns.get(this.curToken.type)
     if (!prefix) {
@@ -128,6 +131,15 @@ export class Parser {
   private parseInteger(): Expr {
     // TODO: handle parseInt error
     return new Integer(this.curToken, parseInt(this.curToken.literal))
+  }
+
+  private parsePrefixExpression(): Expr {
+    const operatorToken = this.curToken
+    this.nextToken()
+
+    // TODO: handle null case
+    const right = this.parseExpression()
+    return new Prefix(operatorToken, operatorToken.literal, right!)
   }
 
   //
