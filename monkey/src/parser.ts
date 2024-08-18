@@ -3,7 +3,7 @@ import { Lexer } from './lexer'
 import { Token, TokenType } from './token'
 import { PrecedenceLevel, precedences } from './precedence'
 
-type PrefixParseFn = () => Expr
+type PrefixParseFn = () => Expr | null
 type InfixParseFn = (left: Expr) => Expr
 
 export class Parser {
@@ -28,6 +28,7 @@ export class Parser {
       [TokenType.FALSE, this.parseBool.bind(this)],
       [TokenType.BANG, this.parsePrefixExpression.bind(this)],
       [TokenType.MINUS, this.parsePrefixExpression.bind(this)],
+      [TokenType.LPAREN, this.parseGroupedExpression.bind(this)],
     ])
 
     this.infixParseFns = new Map([
@@ -148,7 +149,7 @@ export class Parser {
 
       // curToken becomes the operator
       this.nextToken()
-      leftExpr = infix(leftExpr)
+      leftExpr = infix(leftExpr!) // these null cases are annoying
     }
 
     return leftExpr
@@ -176,6 +177,15 @@ export class Parser {
     // TODO: handle null case
     const right = this.parseExpression(PrecedenceLevel.PREFIX)
     return new Prefix(operatorToken, operatorToken.literal, right!)
+  }
+
+  private parseGroupedExpression(): Expr | null {
+    this.nextToken()
+    const expr = this.parseExpression(PrecedenceLevel.LOWEST)
+    if (!this.expectPeek(TokenType.RPAREN)) {
+      return null
+    }
+    return expr
   }
 
   private parseInfixExpression(left: Expr): Expr {
