@@ -5,12 +5,14 @@ export class Lexer {
   private position: number
   private readPosition: number
   private ch: string
+  private line: number
 
   constructor(input: string) {
     this.input = input
     this.position = 0
     this.readPosition = 0
     this.ch = '\0'
+    this.line = 1
   }
 
   static new(input: string): Lexer {
@@ -20,7 +22,7 @@ export class Lexer {
   }
 
   nextToken(): Token {
-    let tok = Token.new(TokenType.EOF, '\0')
+    let tok = Token.new(TokenType.EOF, '\0', this.line)
 
     this.skipWhitespace()
 
@@ -28,57 +30,57 @@ export class Lexer {
       case '=':
         if (this.peekChar() == '=') {
           this.readChar()
-          tok = Token.new(TokenType.EQ, '==')
+          tok = Token.new(TokenType.EQ, '==', this.line)
         } else {
-          tok = Token.new(TokenType.ASSIGN, this.ch)
+          tok = Token.new(TokenType.ASSIGN, this.ch, this.line)
         }
         break
       case '!':
         if (this.peekChar() == '=') {
           this.readChar()
-          tok = Token.new(TokenType.NE, '!=')
+          tok = Token.new(TokenType.NE, '!=', this.line)
         } else {
-          tok = Token.new(TokenType.BANG, this.ch)
+          tok = Token.new(TokenType.BANG, this.ch, this.line)
         }
         break
       case ';':
-        tok = Token.new(TokenType.SEMICOLON, this.ch)
+        tok = Token.new(TokenType.SEMICOLON, this.ch, this.line)
         break
       case '(':
-        tok = Token.new(TokenType.LPAREN, this.ch)
+        tok = Token.new(TokenType.LPAREN, this.ch, this.line)
         break
       case ')':
-        tok = Token.new(TokenType.RPAREN, this.ch)
+        tok = Token.new(TokenType.RPAREN, this.ch, this.line)
         break
       case '{':
-        tok = Token.new(TokenType.LBRACE, this.ch)
+        tok = Token.new(TokenType.LBRACE, this.ch, this.line)
         break
       case '}':
-        tok = Token.new(TokenType.RBRACE, this.ch)
+        tok = Token.new(TokenType.RBRACE, this.ch, this.line)
         break
       case ',':
-        tok = Token.new(TokenType.COMMA, this.ch)
+        tok = Token.new(TokenType.COMMA, this.ch, this.line)
         break
       case '+':
-        tok = Token.new(TokenType.PLUS, this.ch)
+        tok = Token.new(TokenType.PLUS, this.ch, this.line)
         break
       case '-':
-        tok = Token.new(TokenType.MINUS, this.ch)
+        tok = Token.new(TokenType.MINUS, this.ch, this.line)
         break
       case '*':
-        tok = Token.new(TokenType.ASTERISK, this.ch)
+        tok = Token.new(TokenType.ASTERISK, this.ch, this.line)
         break
       case '<':
-        tok = Token.new(TokenType.LT, this.ch)
+        tok = Token.new(TokenType.LT, this.ch, this.line)
         break
       case '>':
-        tok = Token.new(TokenType.GT, this.ch)
+        tok = Token.new(TokenType.GT, this.ch, this.line)
         break
       case '/':
-        tok = Token.new(TokenType.SLASH, this.ch)
+        tok = Token.new(TokenType.SLASH, this.ch, this.line)
         break
       case '\0':
-        tok = Token.new(TokenType.EOF, this.ch)
+        tok = Token.new(TokenType.EOF, this.ch, this.line)
         break
 
       default:
@@ -91,7 +93,7 @@ export class Lexer {
           tok.type = TokenType.INT
           return tok
         } else {
-          tok = Token.new(TokenType.ILLEGAL, this.ch)
+          tok = Token.new(TokenType.ILLEGAL, this.ch, this.line)
         }
     }
 
@@ -134,12 +136,11 @@ export class Lexer {
   }
 
   private skipWhitespace() {
-    while (
-      this.ch == ' ' ||
-      this.ch == '\n' ||
-      this.ch == '\t' ||
-      this.ch == '\r'
-    ) {
+    while (this.ch == ' ' || this.ch == '\n' || this.ch == '\t' || this.ch == '\r') {
+      if (this.ch == '\n') {
+        this.line += 1
+      }
+
       this.readChar()
     }
   }

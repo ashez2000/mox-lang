@@ -29,9 +29,9 @@ export enum TokenType {
 }
 
 export class Token {
-  constructor(public type: TokenType, public literal: string) {}
+  constructor(public type: TokenType, public literal: string, public line: number) {}
 
-  static new(type: TokenType, literal: string) {
-    return new Token(type, literal)
+  static new(type: TokenType, literal: string, line: number) {
+    return new Token(type, literal, line)
   }
 }
