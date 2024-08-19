@@ -1,3 +1,5 @@
+// NOTE: this file is generated using generate-ast package
+
 import { Token } from './token.js'
 
 //
@@ -11,12 +13,12 @@ export abstract class Stmt {
 export interface StmtVisitor<T> {
   visitLetStmt(stmt: Let): T
   visitReturnStmt(stmt: Return): T
-  visitExpressionStmt(stmt: Expression): T
-  visitBlockStmt(stmt: Block): T
+  visitExprStmtStmt(stmt: ExprStmt): T
+  visitBlockStmtStmt(stmt: BlockStmt): T
 }
 
 export class Let extends Stmt {
-  constructor(public token: Token, public name: Identifier, public expr: Expr) {
+  constructor(public token: Token, public name: Ident, public value: Expr) {
     super()
   }
 
@@ -26,7 +28,7 @@ export class Let extends Stmt {
 }
 
 export class Return extends Stmt {
-  constructor(public token: Token, public expr: Expr) {
+  constructor(public token: Token, public value: Expr) {
     super()
   }
 
@@ -35,23 +37,23 @@ export class Return extends Stmt {
   }
 }
 
-export class Expression extends Stmt {
-  constructor(public expr: Expr) {
+export class ExprStmt extends Stmt {
+  constructor(public token: Token, public value: Expr) {
     super()
   }
 
   accept<T>(visitor: StmtVisitor<T>): T {
-    return visitor.visitExpressionStmt(this)
+    return visitor.visitExprStmtStmt(this)
   }
 }
 
-export class Block extends Stmt {
-  constructor(public statements: Stmt[]) {
+export class BlockStmt extends Stmt {
+  constructor(public token: Token, public statements: Stmt[]) {
     super()
   }
 
   accept<T>(visitor: StmtVisitor<T>): T {
-    return visitor.visitBlockStmt(this)
+    return visitor.visitBlockStmtStmt(this)
   }
 }
 
@@ -64,23 +66,23 @@ export abstract class Expr {
 }
 
 export interface ExprVisitor<T> {
-  visitIdentifierExpr(expr: Identifier): T
+  visitIdentExpr(expr: Ident): T
   visitBoolExpr(expr: Bool): T
-  visitIntegerExpr(expr: Integer): T
+  visitIntExpr(expr: Int): T
   visitPrefixExpr(expr: Prefix): T
   visitInfixExpr(expr: Infix): T
-  visitIfExpr(expr: If): T
-  visitFnExpr(expr: Fn): T
-  visitCallExpr(expr: Call): T
+  visitIfExprExpr(expr: IfExpr): T
+  visitFnExprExpr(expr: FnExpr): T
+  visitCallExprExpr(expr: CallExpr): T
 }
 
-export class Identifier extends Expr {
-  constructor(public name: Token, public value: string) {
+export class Ident extends Expr {
+  constructor(public token: Token, public name: string) {
     super()
   }
 
   accept<T>(visitor: ExprVisitor<T>): T {
-    return visitor.visitIdentifierExpr(this)
+    return visitor.visitIdentExpr(this)
   }
 }
 
@@ -94,13 +96,13 @@ export class Bool extends Expr {
   }
 }
 
-export class Integer extends Expr {
+export class Int extends Expr {
   constructor(public token: Token, public value: number) {
     super()
   }
 
   accept<T>(visitor: ExprVisitor<T>): T {
-    return visitor.visitIntegerExpr(this)
+    return visitor.visitIntExpr(this)
   }
 }
 
@@ -124,32 +126,37 @@ export class Infix extends Expr {
   }
 }
 
-export class If extends Expr {
-  constructor(public token: Token, public condidtion: Expr, public thenBlock: Block, public elseBlock: Block | null) {
+export class IfExpr extends Expr {
+  constructor(
+    public token: Token,
+    public condidtion: Expr,
+    public thenBlock: BlockStmt,
+    public elseBlock: BlockStmt | null
+  ) {
     super()
   }
 
   accept<T>(visitor: ExprVisitor<T>): T {
-    return visitor.visitIfExpr(this)
+    return visitor.visitIfExprExpr(this)
   }
 }
 
-export class Fn extends Expr {
-  constructor(public token: Token, public parameters: Identifier[], public body: Block) {
+export class FnExpr extends Expr {
+  constructor(public token: Token, public parameters: Ident[], public body: BlockStmt) {
     super()
   }
 
   accept<T>(visitor: ExprVisitor<T>): T {
-    return visitor.visitFnExpr(this)
+    return visitor.visitFnExprExpr(this)
   }
 }
 
-export class Call extends Expr {
+export class CallExpr extends Expr {
   constructor(public token: Token, public fnExpr: Expr, public args: Expr[]) {
     super()
   }
 
   accept<T>(visitor: ExprVisitor<T>): T {
-    return visitor.visitCallExpr(this)
+    return visitor.visitCallExprExpr(this)
   }
 }

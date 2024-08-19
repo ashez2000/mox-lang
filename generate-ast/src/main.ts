@@ -8,27 +8,28 @@ function main(args: string[]) {
 
   const outputDir = args[0]
 
+  let header = '// NOTE: this file is generated using generate-ast package\n\n'
   let imports = 'import {Token} from "./token.js"\n\n'
 
   const stmt = defineAst('Stmt', [
-    'Let        - token: Token, name: Identifier, expr: Expr',
-    'Return     - token: Token, expr: Expr',
-    'Expression - expr: Expr',
-    'Block      - statements: Stmt[]',
+    'Let       - token: Token, name: Ident, value: Expr',
+    'Return    - token: Token, value: Expr',
+    'ExprStmt  - token: Token, value: Expr',
+    'BlockStmt - token: Token, statements: Stmt[]',
   ])
 
   const expr = defineAst('Expr', [
-    'Identifier - name: Token, value: string',
-    'Bool       - token: Token, value: boolean',
-    'Integer    - token: Token, value: number',
-    'Prefix     - token: Token, operator: string, right: Expr',
-    'Infix      - token: Token, operator: string, left: Expr, right: Expr',
-    'If         - token: Token, condidtion: Expr, thenBlock: Block, elseBlock: Block | null',
-    'Fn         - token: Token, parameters: Identifier[], body: Block',
-    'Call       - token: Token, fnExpr: Expr, args: Expr[]',
+    'Ident    - token: Token, name: string',
+    'Bool     - token: Token, value: boolean',
+    'Int      - token: Token, value: number',
+    'Prefix   - token: Token, operator: string, right: Expr',
+    'Infix    - token: Token, operator: string, left: Expr, right: Expr',
+    'IfExpr   - token: Token, condidtion: Expr, thenBlock: BlockStmt, elseBlock: BlockStmt | null',
+    'FnExpr   - token: Token, parameters: Ident[], body: BlockStmt',
+    'CallExpr - token: Token, fnExpr: Expr, args: Expr[]', // TODO: remove literal in future
   ])
 
-  fs.writeFileSync(outputDir + '/ast.ts', imports + stmt + expr)
+  fs.writeFileSync(outputDir + '/ast.ts', header + imports + stmt + expr)
 }
 
 function defineAst(baseName: string, types: string[]) {
