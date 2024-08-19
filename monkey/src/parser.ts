@@ -1,4 +1,20 @@
-import { Block, Bool, Expr, Expression, Fn, Identifier, If, Infix, Integer, Let, Prefix, Return, Stmt } from './ast'
+import {
+  Block,
+  Bool,
+  Call,
+  Expr,
+  Expression,
+  Fn,
+  Identifier,
+  If,
+  Infix,
+  Integer,
+  Let,
+  Prefix,
+  Return,
+  Stmt,
+} from './ast'
+
 import { Lexer } from './lexer'
 import { Token, TokenType } from './token'
 import { PrecedenceLevel, precedences } from './precedence'
@@ -42,6 +58,7 @@ export class Parser {
       [TokenType.NE, this.parseInfixExpression.bind(this)],
       [TokenType.LT, this.parseInfixExpression.bind(this)],
       [TokenType.GT, this.parseInfixExpression.bind(this)],
+      [TokenType.LPAREN, this.parseCallExpr.bind(this)],
     ])
   }
 
@@ -294,6 +311,33 @@ export class Parser {
     }
 
     return idents
+  }
+
+  private parseCallExpr(fnExpr: Expr): Expr {
+    const tok = this.curToken
+    const args = this.parseCallArgs()
+    return new Call(tok, fnExpr, args)
+  }
+
+  private parseCallArgs(): Expr[] {
+    const args: Expr[] = []
+
+    if (this.peekTokenIs(TokenType.RPAREN)) {
+      this.nextToken()
+      return args
+    }
+
+    // null case
+    this.nextToken()
+    args.push(this.parseExpression(PrecedenceLevel.LOWEST)!)
+
+    while (this.peekTokenIs(TokenType.COMMA)) {
+      this.nextToken()
+      this.nextToken()
+      args.push(this.parseExpression(PrecedenceLevel.LOWEST)!)
+    }
+
+    return args
   }
 
   //

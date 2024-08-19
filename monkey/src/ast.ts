@@ -71,6 +71,7 @@ export interface ExprVisitor<T> {
   visitInfixExpr(expr: Infix): T
   visitIfExpr(expr: If): T
   visitFnExpr(expr: Fn): T
+  visitCallExpr(expr: Call): T
 }
 
 export class Identifier extends Expr {
@@ -140,5 +141,15 @@ export class Fn extends Expr {
 
   accept<T>(visitor: ExprVisitor<T>): T {
     return visitor.visitFnExpr(this)
+  }
+}
+
+export class Call extends Expr {
+  constructor(public token: Token, public fnExpr: Expr, public args: Expr[]) {
+    super()
+  }
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitCallExpr(this)
   }
 }
