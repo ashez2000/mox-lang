@@ -1,6 +1,6 @@
 import { TokenType } from './token'
 
-export enum PrecedenceLevel {
+export enum Precedence {
   LOWEST = 0,
   EQUALS,
   LTGT,
@@ -10,13 +10,13 @@ export enum PrecedenceLevel {
   CALL,
 }
 
-export const precedences = new Map<TokenType, PrecedenceLevel>([
-  [TokenType.EQ, PrecedenceLevel.EQUALS],
-  [TokenType.NE, PrecedenceLevel.EQUALS],
-  [TokenType.LT, PrecedenceLevel.LTGT],
-  [TokenType.GT, PrecedenceLevel.EQUALS],
-  [TokenType.PLUS, PrecedenceLevel.SUM],
-  [TokenType.MINUS, PrecedenceLevel.SUM],
-  [TokenType.SLASH, PrecedenceLevel.PRODUCT],
-  [TokenType.ASTERISK, PrecedenceLevel.PRODUCT],
+export const precedences = new Map<TokenType, Precedence>([
+  [TokenType.EQ, Precedence.EQUALS],
+  [TokenType.NE, Precedence.EQUALS],
+  [TokenType.LT, Precedence.LTGT],
+  [TokenType.GT, Precedence.EQUALS],
+  [TokenType.PLUS, Precedence.SUM],
+  [TokenType.MINUS, Precedence.SUM],
+  [TokenType.SLASH, Precedence.PRODUCT],
+  [TokenType.ASTERISK, Precedence.PRODUCT],
 ])

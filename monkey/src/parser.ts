@@ -1,14 +1,14 @@
 import {
-  Block,
+  BlockStmt,
   Bool,
-  Call,
+  CallExpr,
   Expr,
-  Expression,
-  Fn,
-  Identifier,
-  If,
+  ExprStmt,
+  FnExpr,
+  Ident,
+  IfExpr,
   Infix,
-  Integer,
+  Int,
   Let,
   Prefix,
   Return,
@@ -17,10 +17,10 @@ import {
 
 import { Lexer } from './lexer'
 import { Token, TokenType } from './token'
-import { PrecedenceLevel, precedences } from './precedence'
+import { Precedence, precedences } from './precedence'
 
 type PrefixParseFn = () => Expr | null
-type InfixParseFn = (left: Expr) => Expr
+type InfixParseFn = (left: Expr) => Expr | null
 
 export class Parser {
   private lexer: Lexer
@@ -38,26 +38,26 @@ export class Parser {
     this.errors = []
 
     this.prefixParseFns = new Map([
-      [TokenType.IDENT, this.parseIdentifier.bind(this)],
+      [TokenType.IDENT, this.parseIdent.bind(this)],
       [TokenType.INT, this.parseInteger.bind(this)],
       [TokenType.TRUE, this.parseBool.bind(this)],
       [TokenType.FALSE, this.parseBool.bind(this)],
-      [TokenType.BANG, this.parsePrefixExpression.bind(this)],
-      [TokenType.MINUS, this.parsePrefixExpression.bind(this)],
-      [TokenType.LPAREN, this.parseGroupedExpression.bind(this)],
-      [TokenType.IF, this.parseIfExpression.bind(this)],
-      [TokenType.FUNCTION, this.parseFn.bind(this)],
+      [TokenType.BANG, this.parsePrefix.bind(this)],
+      [TokenType.MINUS, this.parsePrefix.bind(this)],
+      [TokenType.LPAREN, this.parseGroupedExpr.bind(this)],
+      [TokenType.IF, this.parseIfExpr.bind(this)],
+      [TokenType.FUNCTION, this.parseFnExpr.bind(this)],
     ])
 
     this.infixParseFns = new Map([
-      [TokenType.PLUS, this.parseInfixExpression.bind(this)],
-      [TokenType.MINUS, this.parseInfixExpression.bind(this)],
-      [TokenType.SLASH, this.parseInfixExpression.bind(this)],
-      [TokenType.ASTERISK, this.parseInfixExpression.bind(this)],
-      [TokenType.EQ, this.parseInfixExpression.bind(this)],
-      [TokenType.NE, this.parseInfixExpression.bind(this)],
-      [TokenType.LT, this.parseInfixExpression.bind(this)],
-      [TokenType.GT, this.parseInfixExpression.bind(this)],
+      [TokenType.PLUS, this.parseInfix.bind(this)],
+      [TokenType.MINUS, this.parseInfix.bind(this)],
+      [TokenType.SLASH, this.parseInfix.bind(this)],
+      [TokenType.ASTERISK, this.parseInfix.bind(this)],
+      [TokenType.EQ, this.parseInfix.bind(this)],
+      [TokenType.NE, this.parseInfix.bind(this)],
+      [TokenType.LT, this.parseInfix.bind(this)],
+      [TokenType.GT, this.parseInfix.bind(this)],
       [TokenType.LPAREN, this.parseCallExpr.bind(this)],
     ])
   }
@@ -94,47 +94,59 @@ export class Parser {
       case TokenType.RETURN:
         return this.parseReturnStatement()
       default:
-        return this.parseExpressionStatement()
+        return this.parseExprStmt()
     }
   }
 
   // let <ident> = <expr>;
-  private parseLetStatement(): Stmt | null {
+  private parseLetStatement(): Let | null {
     const letToken = this.curToken
 
     if (!this.expectPeek(TokenType.IDENT)) {
       return null
     }
 
-    const ident = new Identifier(this.curToken, this.curToken.literal)
+    const ident = this.parseIdent()
 
     if (!this.expectPeek(TokenType.ASSIGN)) {
       return null
     }
 
-    const expr = this.parseExpression(PrecedenceLevel.LOWEST)! // NULLLLL
-    return new Let(letToken, ident, expr)
+    const value = this.parseExpression(Precedence.LOWEST)
+    if (!value) {
+      return null
+    }
+
+    return new Let(letToken, ident, value)
   }
 
   // return <expr>;
-  private parseReturnStatement(): Stmt | null {
+  private parseReturnStatement(): Return | null {
     const returnToken = this.curToken
     this.nextToken()
-    const expr = this.parseExpression(PrecedenceLevel.LOWEST)! // null case
-    return new Return(returnToken, expr)
+
+    const value = this.parseExpression(Precedence.LOWEST)
+    if (!value) {
+      return null
+    }
+
+    return new Return(returnToken, value)
   }
 
-  // <expr>;
-  private parseExpressionStatement(): Stmt | null {
-    const expr = this.parseExpression(PrecedenceLevel.LOWEST)
+  private parseExprStmt(): ExprStmt | null {
+    const tok = this.curToken
+
+    const value = this.parseExpression(Precedence.LOWEST)
+    if (!value) {
+      return null
+    }
 
     // optional semicolon after expression
     if (this.peekTokenIs(TokenType.SEMICOLON)) {
       this.nextToken()
     }
 
-    // TODO: how to deal with there null cases ???
-    return new Expression(expr!)
+    return new ExprStmt(tok, value)
   }
 
   //
@@ -142,8 +154,7 @@ export class Parser {
   //
 
   // core logic of Pratt Parser aka (Top Down Operator Precedence Parser)
-  private parseExpression(precedence: PrecedenceLevel): Expr | null {
-    // curToken points to start of expression
+  private parseExpression(precedence: Precedence): Expr | null {
     const prefix = this.prefixParseFns.get(this.curToken.type)
     if (!prefix) {
       this.noPrifixParseFnError()
@@ -166,53 +177,58 @@ export class Parser {
     return leftExpr
   }
 
-  private parseIdentifier(): Identifier {
-    return new Identifier(this.curToken, this.curToken.literal)
+  private parseIdent(): Ident {
+    return new Ident(this.curToken, this.curToken.literal)
   }
 
-  private parseInteger(): Expr {
-    // TODO: handle parseInt error
-    return new Integer(this.curToken, parseInt(this.curToken.literal))
+  private parseInteger(): Int {
+    return new Int(this.curToken, parseInt(this.curToken.literal))
   }
 
   private parseBool(): Expr {
-    const value = this.curToken.literal == 'true' ? true : false
-    return new Bool(this.curToken, value)
+    return new Bool(this.curToken, this.curToken.literal == 'true' ? true : false)
   }
 
-  private parsePrefixExpression(): Expr {
-    // curToken points to prefix operator
-    const operatorToken = this.curToken
+  private parsePrefix(): Prefix | null {
+    const opToken = this.curToken
     this.nextToken()
 
-    // TODO: handle null case
-    const right = this.parseExpression(PrecedenceLevel.PREFIX)
-    return new Prefix(operatorToken, operatorToken.literal, right!)
+    const right = this.parseExpression(Precedence.PREFIX)
+    if (!right) {
+      return null
+    }
+
+    return new Prefix(opToken, opToken.literal, right!)
   }
 
-  private parseGroupedExpression(): Expr | null {
-    this.nextToken()
-    const expr = this.parseExpression(PrecedenceLevel.LOWEST)
+  private parseGroupedExpr(): Expr | null {
+    this.nextToken() // "("
+
+    const expr = this.parseExpression(Precedence.LOWEST)
     if (!this.expectPeek(TokenType.RPAREN)) {
       return null
     }
+
     return expr
   }
 
-  private parseInfixExpression(left: Expr): Expr {
-    // curToken points to infix operator
-    const operatorToken = this.curToken
+  private parseInfix(left: Expr): Expr | null {
+    const opToken = this.curToken
     const precedence = this.curPrecedence()
 
     this.nextToken()
     const right = this.parseExpression(precedence)
+    if (!right) {
+      return null
+    }
 
-    return new Infix(operatorToken, operatorToken.literal, left, right!)
+    return new Infix(opToken, opToken.literal, left, right)
   }
 
-  private parseBlock(): Block {
+  private parseBlock(): BlockStmt {
     const stmts: Stmt[] = []
 
+    const tok = this.curToken
     this.nextToken()
 
     while (!this.curTokenIs(TokenType.RBRACE) && !this.curTokenIs(TokenType.EOF)) {
@@ -223,10 +239,10 @@ export class Parser {
       this.nextToken()
     }
 
-    return new Block(stmts)
+    return new BlockStmt(tok, stmts)
   }
 
-  private parseIfExpression(): Expr | null {
+  private parseIfExpr(): IfExpr | null {
     const ifToken = this.curToken
 
     if (!this.expectPeek(TokenType.LPAREN)) {
@@ -235,7 +251,10 @@ export class Parser {
 
     this.nextToken()
 
-    const cond = this.parseExpression(PrecedenceLevel.LOWEST)
+    const cond = this.parseExpression(Precedence.LOWEST)
+    if (!cond) {
+      return null
+    }
 
     if (!this.expectPeek(TokenType.RPAREN)) {
       return null
@@ -246,8 +265,8 @@ export class Parser {
     }
 
     const thenBlock = this.parseBlock()
-    let elseBlock: Block | null = null
 
+    let elseBlock: BlockStmt | null = null
     if (this.peekTokenIs(TokenType.ELSE)) {
       this.nextToken()
       if (!this.expectPeek(TokenType.LBRACE)) {
@@ -256,11 +275,10 @@ export class Parser {
       elseBlock = this.parseBlock()
     }
 
-    // TODO: nulls
-    return new If(ifToken, cond!, thenBlock, elseBlock)
+    return new IfExpr(ifToken, cond, thenBlock, elseBlock)
   }
 
-  private parseFn(): Expr | null {
+  private parseFnExpr(): FnExpr | null {
     const fnToken = this.curToken
 
     if (!this.peekTokenIs(TokenType.LPAREN)) {
@@ -268,6 +286,9 @@ export class Parser {
     }
 
     const params = this.parseFnParams()
+    if (!params) {
+      return null
+    }
 
     if (!this.peekTokenIs(TokenType.LBRACE)) {
       return null
@@ -275,11 +296,11 @@ export class Parser {
 
     const body = this.parseBlock()
 
-    return new Fn(fnToken, params as any, body)
+    return new FnExpr(fnToken, params, body)
   }
 
-  private parseFnParams(): Identifier[] | null {
-    const idents: Identifier[] = []
+  private parseFnParams(): Ident[] | null {
+    const idents: Ident[] = []
 
     if (this.peekTokenIs(TokenType.RPAREN)) {
       this.nextToken()
@@ -288,13 +309,13 @@ export class Parser {
 
     this.nextToken()
 
-    const ident = this.parseIdentifier()
+    const ident = this.parseIdent()
     idents.push(ident)
 
     while (this.peekTokenIs(TokenType.COMMA)) {
       this.nextToken()
       this.nextToken()
-      const ident = this.parseIdentifier()
+      const ident = this.parseIdent()
       idents.push(ident)
     }
 
@@ -305,13 +326,18 @@ export class Parser {
     return idents
   }
 
-  private parseCallExpr(fnExpr: Expr): Expr {
+  private parseCallExpr(fnExpr: Expr): CallExpr | null {
     const tok = this.curToken
+
     const args = this.parseCallArgs()
-    return new Call(tok, fnExpr, args)
+    if (!args) {
+      return null
+    }
+
+    return new CallExpr(tok, fnExpr, args)
   }
 
-  private parseCallArgs(): Expr[] {
+  private parseCallArgs(): Expr[] | null {
     const args: Expr[] = []
 
     if (this.peekTokenIs(TokenType.RPAREN)) {
@@ -319,14 +345,24 @@ export class Parser {
       return args
     }
 
-    // null case
     this.nextToken()
-    args.push(this.parseExpression(PrecedenceLevel.LOWEST)!)
+
+    const expr = this.parseExpression(Precedence.LOWEST)
+    if (!expr) {
+      return null
+    }
+
+    args.push(expr)
 
     while (this.peekTokenIs(TokenType.COMMA)) {
       this.nextToken()
       this.nextToken()
-      args.push(this.parseExpression(PrecedenceLevel.LOWEST)!)
+      const expr = this.parseExpression(Precedence.LOWEST)
+      if (!expr) {
+        return null
+      }
+
+      args.push(expr)
     }
 
     return args
@@ -354,19 +390,21 @@ export class Parser {
       this.nextToken()
       return true
     }
-    this.errors.push(`[line ${this.peekToken.line}]: Expected peek token to be ${type}, got ${this.peekToken.type}`)
+    this.errors.push(
+      `[line ${this.peekToken.line}]: parse: error: expected peek token to be ${type}, got ${this.peekToken.type}`
+    )
     return false
   }
 
   private noPrifixParseFnError() {
-    this.errors.push(`[line ${this.curToken.line}]: No prefix parse fn found for ${this.curToken.type}`)
+    this.errors.push(`[line ${this.curToken.line}]: parse: error: no prefix parse fn found for ${this.curToken.type}`)
   }
 
-  private peekPrecedence(): PrecedenceLevel {
-    return precedences.get(this.peekToken.type) ?? PrecedenceLevel.LOWEST
+  private peekPrecedence(): Precedence {
+    return precedences.get(this.peekToken.type) ?? Precedence.LOWEST
   }
 
-  private curPrecedence(): PrecedenceLevel {
-    return precedences.get(this.curToken.type) ?? PrecedenceLevel.LOWEST
+  private curPrecedence(): Precedence {
+    return precedences.get(this.curToken.type) ?? Precedence.LOWEST
   }
 }
