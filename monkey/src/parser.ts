@@ -112,24 +112,16 @@ export class Parser {
       return null
     }
 
-    // skipping expression
-    while (!this.curTokenIs(TokenType.SEMICOLON)) {
-      this.nextToken()
-    }
-
-    return new Let(letToken, ident, {} as any)
+    const expr = this.parseExpression(PrecedenceLevel.LOWEST)! // NULLLLL
+    return new Let(letToken, ident, expr)
   }
 
   // return <expr>;
   private parseReturnStatement(): Stmt | null {
     const returnToken = this.curToken
     this.nextToken()
-
-    while (!this.curTokenIs(TokenType.SEMICOLON)) {
-      this.nextToken()
-    }
-
-    return new Return(returnToken, {} as any)
+    const expr = this.parseExpression(PrecedenceLevel.LOWEST)! // null case
+    return new Return(returnToken, expr)
   }
 
   // <expr>;
