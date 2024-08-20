@@ -1,5 +1,5 @@
 import { test } from 'node:test'
-import { strict as assert, fail } from 'node:assert'
+import { strict as assert } from 'node:assert'
 
 import { Parser } from '../parser.js'
 import { Lexer } from '../lexer.js'
@@ -122,13 +122,7 @@ test('test parseInfixExpression', () => {
 
     const stmt = statements[0]
     assert(stmt instanceof ExprStmt)
-
-    const infix = stmt.value
-    assert(infix instanceof Infix)
-
-    assert.equal(infix.operator, t.operator)
-    testIntegerExpr(infix.left, t.left)
-    testIntegerExpr(infix.right, t.right)
+    testInfixExpr(stmt.value, t.left, t.operator, t.right)
   }
 })
 

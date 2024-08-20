@@ -14,7 +14,7 @@ export const precedences = new Map<TokenType, Precedence>([
   [TokenType.EQ, Precedence.EQUALS],
   [TokenType.NE, Precedence.EQUALS],
   [TokenType.LT, Precedence.LTGT],
-  [TokenType.GT, Precedence.EQUALS],
+  [TokenType.GT, Precedence.LTGT],
   [TokenType.PLUS, Precedence.SUM],
   [TokenType.MINUS, Precedence.SUM],
   [TokenType.SLASH, Precedence.PRODUCT],

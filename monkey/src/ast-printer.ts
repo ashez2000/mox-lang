@@ -57,7 +57,7 @@ class AstPrinter implements StmtVisitor<string>, ExprVisitor<string> {
   }
 
   visitPrefixExpr(expr: Prefix): string {
-    return `(${expr.operator} ${this.print(expr.right)})`
+    return `(${expr.operator}${this.print(expr.right)})`
   }
 
   visitInfixExpr(expr: Infix): string {
