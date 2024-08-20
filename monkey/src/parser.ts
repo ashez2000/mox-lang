@@ -375,6 +375,10 @@ export class Parser {
       args.push(expr)
     }
 
+    if (this.expectPeek(TokenType.RPAREN)) {
+      return null
+    }
+
     return args
   }
 
