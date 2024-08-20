@@ -50,7 +50,8 @@ export class Interpreter implements ExprVisitor<obj.MonkeyObject>, StmtVisitor<o
   }
 
   visitBlockStmtStmt(stmt: BlockStmt): obj.MonkeyObject {
-    return NULL
+    // TODO: looks funny
+    return this.evaluate(stmt.statements).at(-1) ?? NULL
   }
 
   //
@@ -132,7 +133,30 @@ export class Interpreter implements ExprVisitor<obj.MonkeyObject>, StmtVisitor<o
   }
 
   visitIfExprExpr(expr: IfExpr): obj.MonkeyObject {
+    const cond = expr.condidtion.accept(this)
+
+    if (this.isTruthy(cond)) {
+      return expr.thenBlock.accept(this)
+    }
+
+    if (expr.elseBlock) {
+      return expr.elseBlock.accept(this)
+    }
+
     return NULL
+  }
+
+  isTruthy(obj: obj.MonkeyObject): boolean {
+    switch (obj) {
+      case NULL:
+        return false
+      case TRUE:
+        return true
+      case FALSE:
+        return false
+      default:
+        return true
+    }
   }
 
   visitFnExprExpr(expr: FnExpr): obj.MonkeyObject {
