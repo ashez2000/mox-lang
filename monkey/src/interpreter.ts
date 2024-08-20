@@ -23,26 +23,31 @@ const TRUE = new obj.Bool(true)
 const FALSE = new obj.Bool(false)
 
 export class Interpreter implements ExprVisitor<obj.MonkeyObject>, StmtVisitor<obj.MonkeyObject> {
-  //
-  // statements
-  //
-
   evaluate(ast: Stmt[]): obj.MonkeyObject[] {
     const result: obj.MonkeyObject[] = []
 
     for (const s of ast) {
-      result.push(s.accept(this))
+      const value = s.accept(this)
+      result.push(value)
+      if (value instanceof obj.Return) {
+        return result
+      }
     }
 
     return result
   }
+
+  //
+  // statements
+  //
 
   visitLetStmt(stmt: Let): obj.MonkeyObject {
     return NULL
   }
 
   visitReturnStmt(stmt: Return): obj.MonkeyObject {
-    return NULL
+    const value = stmt.value.accept(this)
+    return new obj.Return(value)
   }
 
   visitExprStmtStmt(stmt: ExprStmt): obj.MonkeyObject {

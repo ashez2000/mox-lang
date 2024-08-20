@@ -2,6 +2,7 @@ export enum MonkeyObjectType {
   INT = 'INT',
   BOOL = 'BOOL',
   NULL = 'NULL',
+  RETURN = 'RETURN',
 }
 
 export abstract class MonkeyObject {
@@ -32,5 +33,15 @@ export class Bool implements MonkeyObject {
 
   display(): string {
     return `${this.value}`
+  }
+}
+
+export class Return implements MonkeyObject {
+  type: MonkeyObjectType = MonkeyObjectType.RETURN
+
+  constructor(public value: MonkeyObject) {}
+
+  display(): string {
+    return `${this.value.display()}`
   }
 }
