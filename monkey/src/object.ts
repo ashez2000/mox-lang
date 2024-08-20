@@ -19,5 +19,5 @@ export class Int implements MonkeyObject {
 
 export class Bool implements MonkeyObject {
   type: MonkeyObjectType = MonkeyObjectType.BOOL
-  constructor(public value: number) {}
+  constructor(public value: boolean) {}
 }
