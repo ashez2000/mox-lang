@@ -112,9 +112,15 @@ export class Parser {
       return null
     }
 
+    this.nextToken()
+
     const value = this.parseExpression(Precedence.LOWEST)
     if (!value) {
       return null
+    }
+
+    if (this.peekTokenIs(TokenType.SEMICOLON)) {
+      this.nextToken()
     }
 
     return new Let(letToken, ident, value)
@@ -128,6 +134,10 @@ export class Parser {
     const value = this.parseExpression(Precedence.LOWEST)
     if (!value) {
       return null
+    }
+
+    if (this.peekTokenIs(TokenType.SEMICOLON)) {
+      this.nextToken()
     }
 
     return new Return(returnToken, value)
@@ -385,6 +395,7 @@ export class Parser {
     return this.peekToken.type == type
   }
 
+  /** if peek token is a match it calls nextToken() */
   private expectPeek(type: TokenType): boolean {
     if (this.peekTokenIs(type)) {
       this.nextToken()
