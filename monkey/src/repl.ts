@@ -1,6 +1,8 @@
 import readline from 'node:readline'
+
 import { Lexer } from './lexer'
-import { TokenType } from './token'
+import { Parser } from './parser'
+import astPrinter from './ast-printer'
 
 function prompt(): Promise<string> {
   const rl = readline.createInterface({
@@ -20,13 +22,18 @@ export async function repl() {
   while (true) {
     const input = await prompt()
     const lexer = Lexer.new(input)
+    const parser = Parser.new(lexer)
 
-    for (
-      let tok = lexer.nextToken();
-      tok.type !== TokenType.EOF;
-      tok = lexer.nextToken()
-    ) {
-      console.log(tok)
+    const stmts = parser.parse()
+    if (parser.errors.length) {
+      for (const e of parser.errors) {
+        console.log(e)
+      }
+      continue
+    }
+
+    for (const s of stmts) {
+      console.log(astPrinter.print(s))
     }
   }
 }
