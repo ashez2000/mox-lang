@@ -1,9 +1,10 @@
 import { test } from 'node:test'
-import { strict as assert } from 'node:assert'
+import { strict as assert, fail } from 'node:assert'
 
 import { Parser } from '../parser.js'
 import { Lexer } from '../lexer.js'
 import { Bool, Expr, ExprStmt, Ident, IfExpr, Infix, Int, Let, Prefix, Return, Stmt } from '../ast.js'
+import { TokenType } from '../token.js'
 
 test('test parseLetStatement', () => {
   const input = `
@@ -172,4 +173,31 @@ function testProgram(input: string, expectedStatements: number): Stmt[] {
 function testIntegerExpr(expr: Expr, value: number) {
   assert(expr instanceof Int)
   assert.equal(expr.value, value)
+}
+
+function testIdent(expr: Expr, name: string) {
+  assert(expr instanceof Ident)
+  assert(expr.token.type == TokenType.IDENT)
+  assert(expr.name == name)
+}
+
+function testLiteralExpr(expr: Expr, expected: any) {
+  if (typeof expected == 'number') {
+    testIntegerExpr(expr, expected)
+    return
+  }
+
+  if (typeof expected == 'string') {
+    testIdent(expr, expected)
+    return
+  }
+
+  assert.fail('unknown expected value type')
+}
+
+function testInfixExpr(expr: Expr, left: any, op: string, right: any) {
+  assert(expr instanceof Infix)
+  testLiteralExpr(expr.left, left)
+  assert(op == expr.operator)
+  testLiteralExpr(expr.right, right)
 }
