@@ -66,15 +66,69 @@ export class Interpreter implements ExprVisitor<obj.MonkeyObject>, StmtVisitor<o
   }
 
   visitBoolExpr(expr: Bool): obj.MonkeyObject {
-    return NULL
+    return expr.value ? TRUE : FALSE
   }
 
   visitPrefixExpr(expr: Prefix): obj.MonkeyObject {
-    return NULL
+    const right = expr.right.accept(this)
+
+    switch (expr.operator) {
+      case '!':
+        return this.evalBangExpr(right)
+      case '-':
+        return this.evalMinusPrefixExpr(right)
+      default:
+        return NULL
+    }
+  }
+
+  evalBangExpr(right: obj.MonkeyObject): obj.MonkeyObject {
+    switch (right) {
+      case TRUE:
+        return FALSE
+      case FALSE:
+        return TRUE
+      case NULL:
+        return TRUE
+      default:
+        return FALSE
+    }
+  }
+
+  evalMinusPrefixExpr(right: obj.MonkeyObject): obj.MonkeyObject {
+    if (!(right instanceof obj.Int)) {
+      return NULL
+    }
+    return new obj.Int(-right.value)
   }
 
   visitInfixExpr(expr: Infix): obj.MonkeyObject {
+    const left = expr.left.accept(this)
+    const right = expr.right.accept(this)
+    return this.evalInfixExpr(expr.operator, left, right)
+  }
+
+  evalInfixExpr(op: string, left: obj.MonkeyObject, right: obj.MonkeyObject) {
+    if (left instanceof obj.Int && right instanceof obj.Int) {
+      return this.evalIntInfixExpr(op, left, right)
+    }
+
     return NULL
+  }
+
+  evalIntInfixExpr(op: string, left: obj.Int, right: obj.Int) {
+    switch (op) {
+      case '+':
+        return new obj.Int(left.value + right.value)
+      case '-':
+        return new obj.Int(left.value - right.value)
+      case '*':
+        return new obj.Int(left.value * right.value)
+      case '/':
+        return new obj.Int(left.value / right.value)
+      default:
+        return NULL
+    }
   }
 
   visitIfExprExpr(expr: IfExpr): obj.MonkeyObject {

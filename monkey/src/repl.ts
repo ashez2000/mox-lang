@@ -2,7 +2,7 @@ import readline from 'node:readline'
 
 import { Lexer } from './lexer'
 import { Parser } from './parser'
-import astPrinter from './ast-printer'
+import { Interpreter } from './interpreter'
 
 function prompt(): Promise<string> {
   const rl = readline.createInterface({
@@ -19,6 +19,8 @@ function prompt(): Promise<string> {
 }
 
 export async function repl() {
+  const interpreter = new Interpreter()
+
   while (true) {
     const input = await prompt()
     const lexer = Lexer.new(input)
@@ -32,8 +34,9 @@ export async function repl() {
       continue
     }
 
-    for (const s of stmts) {
-      console.log(astPrinter.print(s))
+    const result = interpreter.evaluate(stmts)
+    for (const r of result) {
+      console.log(r.display())
     }
   }
 }
