@@ -75,9 +75,9 @@ class AstPrinter implements StmtVisitor<string>, ExprVisitor<string> {
 
   visitFnExprExpr(expr: FnExpr): string {
     let params = ''
-    for (let i = 0; i < params.length; i++) {
+    for (let i = 0; i < expr.parameters.length; i++) {
       params += this.print(expr.parameters[i])
-      if (i != params.length - 1) {
+      if (i != expr.parameters.length - 1) {
         params += ', '
       }
     }
@@ -89,7 +89,7 @@ class AstPrinter implements StmtVisitor<string>, ExprVisitor<string> {
     let args = ''
     for (let i = 0; i < expr.args.length; i++) {
       args += this.print(expr.args[i])
-      if (i != args.length - 1) {
+      if (i != expr.args.length - 1) {
         args += ', '
       }
     }

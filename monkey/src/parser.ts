@@ -288,10 +288,11 @@ export class Parser {
     return new IfExpr(ifToken, cond, thenBlock, elseBlock)
   }
 
+  // fn ( <params> ) { <block> }
   private parseFnExpr(): FnExpr | null {
     const fnToken = this.curToken
 
-    if (!this.peekTokenIs(TokenType.LPAREN)) {
+    if (!this.expectPeek(TokenType.LPAREN)) {
       return null
     }
 
@@ -300,7 +301,7 @@ export class Parser {
       return null
     }
 
-    if (!this.peekTokenIs(TokenType.LBRACE)) {
+    if (!this.expectPeek(TokenType.LBRACE)) {
       return null
     }
 
@@ -309,6 +310,7 @@ export class Parser {
     return new FnExpr(fnToken, params, body)
   }
 
+  // ( <params> )
   private parseFnParams(): Ident[] | null {
     const idents: Ident[] = []
 
@@ -318,7 +320,6 @@ export class Parser {
     }
 
     this.nextToken()
-
     const ident = this.parseIdent()
     idents.push(ident)
 
@@ -329,13 +330,14 @@ export class Parser {
       idents.push(ident)
     }
 
-    if (!this.peekTokenIs(TokenType.LBRACE)) {
+    if (!this.expectPeek(TokenType.RPAREN)) {
       return null
     }
 
     return idents
   }
 
+  // <fn_lit> | <ident> (<args>)
   private parseCallExpr(fnExpr: Expr): CallExpr | null {
     const tok = this.curToken
 
@@ -347,6 +349,7 @@ export class Parser {
     return new CallExpr(tok, fnExpr, args)
   }
 
+  // ( <args> )
   private parseCallArgs(): Expr[] | null {
     const args: Expr[] = []
 
@@ -375,7 +378,7 @@ export class Parser {
       args.push(expr)
     }
 
-    if (this.expectPeek(TokenType.RPAREN)) {
+    if (!this.expectPeek(TokenType.RPAREN)) {
       return null
     }
 

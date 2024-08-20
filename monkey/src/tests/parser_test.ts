@@ -3,7 +3,7 @@ import { strict as assert } from 'node:assert'
 
 import { Parser } from '../parser.js'
 import { Lexer } from '../lexer.js'
-import { Bool, Expr, ExprStmt, Ident, IfExpr, Infix, Int, Let, Prefix, Return, Stmt } from '../ast.js'
+import { Bool, CallExpr, Expr, ExprStmt, FnExpr, Ident, IfExpr, Infix, Int, Let, Prefix, Return, Stmt } from '../ast.js'
 import { TokenType } from '../token.js'
 
 test('test parseLetStatement', () => {
@@ -136,6 +136,43 @@ test('test parseIfExpression', () => {
 
   const ifExpr = stmt.value
   assert(ifExpr instanceof IfExpr)
+})
+
+test('test parseFnExpr', () => {
+  const input = 'fn (x, y) { x + y; }'
+
+  const statements = testProgram(input, 1)
+  const stmt = statements[0]
+  assert(stmt instanceof ExprStmt)
+
+  const fnExpr = stmt.value
+  assert(fnExpr instanceof FnExpr)
+
+  assert.equal(fnExpr.parameters.length, 2)
+  testLiteralExpr(fnExpr.parameters[0], 'x')
+  testLiteralExpr(fnExpr.parameters[1], 'y')
+
+  const body = fnExpr.body
+  assert.equal(body.statements.length, 1)
+  const bodyStmt = body.statements[0]
+  assert(bodyStmt instanceof ExprStmt)
+  testInfixExpr(bodyStmt.value, 'x', '+', 'y')
+})
+
+test('test parseCallExpr', () => {
+  const input = 'add(1, 2 * 3, 4 + 5)'
+  const statements = testProgram(input, 1)
+  const stmt = statements[0]
+  assert(stmt instanceof ExprStmt)
+
+  const callExpr = stmt.value
+  assert(callExpr instanceof CallExpr)
+  assert(callExpr.fnExpr instanceof Ident)
+  assert(callExpr.fnExpr.name, 'add')
+  assert.equal(callExpr.args.length, 3)
+  testLiteralExpr(callExpr.args[0], 1)
+  testInfixExpr(callExpr.args[1], 2, '*', 3)
+  testInfixExpr(callExpr.args[2], 4, '+', 5)
 })
 
 //
