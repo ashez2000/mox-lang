@@ -8,39 +8,46 @@ function main(args: string[]) {
 
   const outputDir = args[0]
 
-  let header = '// NOTE: this file is generated using generate-ast package\n\n'
-  let imports = 'import {Token} from "./token.js"\n\n'
-
-  const stmt = defineAst('Stmt', [
-    'Let       - token: Token, name: Ident, value: Expr',
-    'Return    - token: Token, value: Expr',
-    'ExprStmt  - token: Token, value: Expr',
-    'BlockStmt - token: Token, statements: Stmt[]',
-    'Print     - token: Token, value: Expr',
+  defineAst(outputDir, 'Stmt', [
+    'Program  - statements: Stmt[]',
+    'Let      - token: Token, name: expr.Ident, expr: expr.Expr',
+    'Return   - token: Token, expr: expr.Expr',
+    'Print    - token: Token, expr: expr.Expr',
+    'Expr     - token: Token, expr: expr.Expr',
+    'Block    - token: Token, statements: Stmt[]',
   ])
 
-  const expr = defineAst('Expr', [
+  defineAst(outputDir, 'Expr', [
     'Ident    - token: Token, name: string',
     'Bool     - token: Token, value: boolean',
     'Int      - token: Token, value: number',
-    'Str      - token: Token, value: string',
+    'String   - token: Token, value: string',
     'Prefix   - token: Token, operator: string, right: Expr',
     'Infix    - token: Token, operator: string, left: Expr, right: Expr',
-    'IfExpr   - token: Token, condidtion: Expr, thenBlock: BlockStmt, elseBlock: BlockStmt | null',
-    'FnExpr   - token: Token, parameters: Ident[], body: BlockStmt',
-    'CallExpr - token: Token, fnExpr: Expr, args: Expr[]', // TODO: remove literal in future
+    'If       - token: Token, condidtion: Expr, consequence: stmt.Block, alternative: stmt.Block | null = null',
+    'Func     - token: Token, parameters: Ident[], body: stmt.Block',
+    'Call     - token: Token, func: Expr, args: Expr[]',
   ])
-
-  fs.writeFileSync(outputDir + '/ast.ts', header + imports + stmt + expr)
 }
 
-function defineAst(baseName: string, types: string[]) {
+function defineAst(outputDir: string, baseName: string, types: string[]) {
+  const path = `${outputDir}/${baseName.toLowerCase()}.ts`
+
+  // TODO: Refactor to file writer
   let code = ''
-  code += '//\n'
-  code += `// ${baseName}\n`
-  code += '//\n\n'
+  code += "import { Token } from '../token.js'\n"
+
+  if (baseName === 'Stmt') {
+    code += "import * as expr from './expr.js'\n"
+  }
+
+  if (baseName === 'Expr') {
+    code += "import * as stmt from './stmt.js'\n"
+  }
+
+  code += '\n'
   code += `export abstract class ${baseName} {\n`
-  code += `abstract accept<T>(visitor: ${baseName}Visitor<T>): T\n }\n`
+  code += 'abstract accept<T>(visitor: Visitor<T>): T\n }\n'
   code += '\n'
 
   code += defineVisitor(baseName, types)
@@ -53,7 +60,7 @@ function defineAst(baseName: string, types: string[]) {
     code += '\n'
   }
 
-  return code
+  fs.writeFileSync(path, code)
 }
 
 function defineType(baseName: string, className: string, fieldList: string) {
@@ -68,7 +75,14 @@ function defineType(baseName: string, className: string, fieldList: string) {
 
   code += ') { super() }\n\n'
 
-  code += `accept<T> (visitor: ${baseName}Visitor<T>): T {\n`
+  const args = fieldList
+    .split(',')
+    .map((f) => f.split(':')[0])
+    .join(',')
+
+  code += `static new (${fieldList}): ${className} { return new ${className}(${args})  }\n\n`
+
+  code += `accept<T> (visitor: Visitor<T>): T {\n`
   code += `return visitor.visit${className}${baseName}(this) } }\n`
 
   return code
@@ -76,7 +90,7 @@ function defineType(baseName: string, className: string, fieldList: string) {
 
 function defineVisitor(baseName: string, types: string[]) {
   let code = ''
-  code += `export interface ${baseName}Visitor<T> {\n`
+  code += `export interface Visitor<T> {\n`
 
   for (const t of types) {
     const typeName = t.split('-')[0].trim()

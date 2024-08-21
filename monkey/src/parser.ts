@@ -1,25 +1,12 @@
-import {
-  BlockStmt,
-  Bool,
-  CallExpr,
-  Expr,
-  ExprStmt,
-  FnExpr,
-  Ident,
-  IfExpr,
-  Infix,
-  Int,
-  Let,
-  Prefix,
-  Print,
-  Return,
-  Stmt,
-  Str,
-} from './ast'
+import * as expr from './ast/expr'
+import * as stmt from './ast/stmt'
 
 import { Lexer } from './lexer'
 import { Token, TokenType } from './token'
 import { Precedence, precedences } from './precedence'
+
+type Stmt = stmt.Stmt
+type Expr = expr.Expr
 
 type PrefixParseFn = () => Expr | null
 type InfixParseFn = (left: Expr) => Expr | null
@@ -42,7 +29,7 @@ export class Parser {
     this.prefixParseFns = new Map([
       [TokenType.IDENT, this.parseIdent.bind(this)],
       [TokenType.INT, this.parseInteger.bind(this)],
-      [TokenType.STRING, this.parseStr.bind(this)],
+      [TokenType.STRING, this.parseString.bind(this)],
       [TokenType.TRUE, this.parseBool.bind(this)],
       [TokenType.FALSE, this.parseBool.bind(this)],
       [TokenType.BANG, this.parsePrefix.bind(this)],
@@ -72,8 +59,8 @@ export class Parser {
     return parser
   }
 
-  parse(): Stmt[] {
-    const statements: Stmt[] = []
+  parse(): stmt.Program {
+    const statements: stmt.Stmt[] = []
 
     while (this.curToken.type != TokenType.EOF) {
       const stmt = this.parseStatement()
@@ -83,7 +70,7 @@ export class Parser {
       this.nextToken()
     }
 
-    return statements
+    return stmt.Program.new(statements)
   }
 
   //
@@ -103,8 +90,8 @@ export class Parser {
     }
   }
 
-  // let <ident> = <expr>;
-  private parseLetStatement(): Let | null {
+  // "let" <ident> "=" <expr> ";"?
+  private parseLetStatement(): stmt.Let | null {
     const letToken = this.curToken
 
     if (!this.expectPeek(TokenType.IDENT)) {
@@ -128,11 +115,11 @@ export class Parser {
       this.nextToken()
     }
 
-    return new Let(letToken, ident, value)
+    return stmt.Let.new(letToken, ident, value)
   }
 
-  // return <expr>;
-  private parseReturnStatement(): Return | null {
+  // "return" <expr> ";"?
+  private parseReturnStatement(): stmt.Return | null {
     const returnToken = this.curToken
     this.nextToken()
 
@@ -145,11 +132,11 @@ export class Parser {
       this.nextToken()
     }
 
-    return new Return(returnToken, value)
+    return stmt.Return.new(returnToken, value)
   }
 
-  // print <expr>;
-  private parsePrintStatement(): Print | null {
+  // "print" <expr> ";"?
+  private parsePrintStatement(): stmt.Print | null {
     const printTok = this.curToken
     this.nextToken()
     const value = this.parseExpression(Precedence.LOWEST)
@@ -161,10 +148,11 @@ export class Parser {
       this.nextToken()
     }
 
-    return new Print(printTok, value)
+    return stmt.Print.new(printTok, value)
   }
 
-  private parseExprStmt(): ExprStmt | null {
+  // <expr> ";"?
+  private parseExprStmt(): stmt.Expr | null {
     const tok = this.curToken
 
     const value = this.parseExpression(Precedence.LOWEST)
@@ -172,12 +160,31 @@ export class Parser {
       return null
     }
 
-    // optional semicolon after expression
     if (this.peekTokenIs(TokenType.SEMICOLON)) {
       this.nextToken()
     }
 
-    return new ExprStmt(tok, value)
+    return stmt.Expr.new(tok, value)
+  }
+
+  // "{" <statements> "}"
+  private parseBlock(): stmt.Block {
+    const stmts: Stmt[] = []
+
+    const tok = this.curToken
+    this.nextToken()
+
+    while (!this.curTokenIs(TokenType.RBRACE) && !this.curTokenIs(TokenType.EOF)) {
+      const stmt = this.parseStatement()
+      if (stmt != null) {
+        stmts.push(stmt)
+      }
+      this.nextToken()
+    }
+
+    // TODO: handle EOF
+
+    return stmt.Block.new(tok, stmts)
   }
 
   //
@@ -200,31 +207,32 @@ export class Parser {
         return leftExpr
       }
 
-      // curToken becomes the operator
       this.nextToken()
-      leftExpr = infix(leftExpr!) // these null cases are annoying
+
+      // TODO: handle null case
+      leftExpr = infix(leftExpr!)
     }
 
     return leftExpr
   }
 
-  private parseIdent(): Ident {
-    return new Ident(this.curToken, this.curToken.literal)
+  private parseIdent(): expr.Ident {
+    return expr.Ident.new(this.curToken, this.curToken.literal)
   }
 
-  private parseInteger(): Int {
-    return new Int(this.curToken, parseInt(this.curToken.literal))
+  private parseInteger(): expr.Int {
+    return expr.Int.new(this.curToken, parseInt(this.curToken.literal))
   }
 
-  private parseBool(): Expr {
-    return new Bool(this.curToken, this.curToken.literal == 'true' ? true : false)
+  private parseBool(): expr.Bool {
+    return expr.Bool.new(this.curToken, this.curToken.literal == 'true' ? true : false)
   }
 
-  private parseStr(): Expr {
-    return new Str(this.curToken, this.curToken.literal)
+  private parseString(): expr.String {
+    return expr.String.new(this.curToken, this.curToken.literal)
   }
 
-  private parsePrefix(): Prefix | null {
+  private parsePrefix(): expr.Prefix | null {
     const opToken = this.curToken
     this.nextToken()
 
@@ -233,7 +241,7 @@ export class Parser {
       return null
     }
 
-    return new Prefix(opToken, opToken.literal, right!)
+    return expr.Prefix.new(opToken, opToken.literal, right!)
   }
 
   private parseGroupedExpr(): Expr | null {
@@ -247,7 +255,7 @@ export class Parser {
     return expr
   }
 
-  private parseInfix(left: Expr): Expr | null {
+  private parseInfix(left: Expr): expr.Infix | null {
     const opToken = this.curToken
     const precedence = this.curPrecedence()
 
@@ -257,28 +265,12 @@ export class Parser {
       return null
     }
 
-    return new Infix(opToken, opToken.literal, left, right)
+    return expr.Infix.new(opToken, opToken.literal, left, right)
   }
 
-  private parseBlock(): BlockStmt {
-    const stmts: Stmt[] = []
-
-    const tok = this.curToken
-    this.nextToken()
-
-    while (!this.curTokenIs(TokenType.RBRACE) && !this.curTokenIs(TokenType.EOF)) {
-      const stmt = this.parseStatement()
-      if (stmt != null) {
-        stmts.push(stmt)
-      }
-      this.nextToken()
-    }
-
-    return new BlockStmt(tok, stmts)
-  }
-
-  private parseIfExpr(): IfExpr | null {
-    const ifToken = this.curToken
+  // "if" "(" <condition> ")" "{" <consequence> "}" ( else  "{" <alternative> "}" )?
+  private parseIfExpr(): expr.If | null {
+    const token = this.curToken
 
     if (!this.expectPeek(TokenType.LPAREN)) {
       return null
@@ -286,8 +278,8 @@ export class Parser {
 
     this.nextToken()
 
-    const cond = this.parseExpression(Precedence.LOWEST)
-    if (!cond) {
+    const condition = this.parseExpression(Precedence.LOWEST)
+    if (!condition) {
       return null
     }
 
@@ -299,22 +291,22 @@ export class Parser {
       return null
     }
 
-    const thenBlock = this.parseBlock()
+    const consequence = this.parseBlock()
 
-    let elseBlock: BlockStmt | null = null
+    let alternative: stmt.Block | null = null
     if (this.peekTokenIs(TokenType.ELSE)) {
       this.nextToken()
       if (!this.expectPeek(TokenType.LBRACE)) {
         return null
       }
-      elseBlock = this.parseBlock()
+      alternative = this.parseBlock()
     }
 
-    return new IfExpr(ifToken, cond, thenBlock, elseBlock)
+    return expr.If.new(token, condition, consequence, alternative)
   }
 
   // fn ( <params> ) { <block> }
-  private parseFnExpr(): FnExpr | null {
+  private parseFnExpr(): expr.Func | null {
     const fnToken = this.curToken
 
     if (!this.expectPeek(TokenType.LPAREN)) {
@@ -332,12 +324,12 @@ export class Parser {
 
     const body = this.parseBlock()
 
-    return new FnExpr(fnToken, params, body)
+    return expr.Func.new(fnToken, params, body)
   }
 
   // ( <params> )
-  private parseFnParams(): Ident[] | null {
-    const idents: Ident[] = []
+  private parseFnParams(): expr.Ident[] | null {
+    const idents: expr.Ident[] = []
 
     if (this.peekTokenIs(TokenType.RPAREN)) {
       this.nextToken()
@@ -363,7 +355,7 @@ export class Parser {
   }
 
   // <fn_lit> | <ident> (<args>)
-  private parseCallExpr(fnExpr: Expr): CallExpr | null {
+  private parseCallExpr(fnExpr: Expr): Expr | null {
     const tok = this.curToken
 
     const args = this.parseCallArgs()
@@ -371,7 +363,7 @@ export class Parser {
       return null
     }
 
-    return new CallExpr(tok, fnExpr, args)
+    return expr.Call.new(tok, fnExpr, args)
   }
 
   // ( <args> )

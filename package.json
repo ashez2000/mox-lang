@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "scripts": {
     "start": "npm start --prefix monkey",
-    "generate": "npm run generate --prefix generate-ast -- ../monkey/src"
+    "generate": "npm run generate --prefix generate-ast -- ../monkey/src/ast"
   }
 }
