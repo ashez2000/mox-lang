@@ -86,6 +86,7 @@ test('interpreter: test if else expression evalutation', () => {
     ['if (1 > 2) { 10 }', null],
     ['if (1 > 2) { 10 } else { 20 }', 20],
     ['if (1 < 2) { 10 } else { 20 }', 10],
+    ['if (true) { if (true) { return 10; } return 1; }', 10],
   ]
 
   for (const t of tests) {
@@ -95,6 +96,21 @@ test('interpreter: test if else expression evalutation', () => {
     } else {
       testNullObject(value)
     }
+  }
+})
+
+test('interpreter: test return statement execution', () => {
+  const tests: [string, number][] = [
+    ['return 10;', 10],
+    ['return 10; 9;', 10],
+    ['return 2 * 5; 9;', 10],
+    ['9; return 2 * 5; 9;', 10],
+  ]
+
+  for (const t of tests) {
+    const value = testEval(t[0])
+    console.log(value)
+    testIntObject(value, t[1])
   }
 })
 

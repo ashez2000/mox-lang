@@ -35,7 +35,7 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
     for (const s of stmt.statements) {
       value = this.execute(s)
       if (value instanceof object.Return) {
-        return value
+        return value.value // unwrap return value
       }
     }
 
@@ -47,7 +47,8 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   }
 
   visitReturnStmt(stmt: stmt.Return): object.MoxObject {
-    return NULL
+    const value = this.evaluate(stmt.expr)
+    return new object.Return(value)
   }
 
   visitPrintStmt(stmt: stmt.Print): object.MoxObject {
@@ -58,9 +59,17 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
     return this.evaluate(stmt.expr)
   }
 
-  visitBlockStmt(stmts: stmt.Block): object.MoxObject {
-    // TODO: looks funny
-    return this.interpret(stmt.Program.new(stmts.statements))
+  visitBlockStmt(stmt: stmt.Block): object.MoxObject {
+    let value: MoxObject = NULL
+
+    for (const s of stmt.statements) {
+      value = this.execute(s)
+      if (value instanceof object.Return) {
+        return value // bubble up return value
+      }
+    }
+
+    return value
   }
 
   //
