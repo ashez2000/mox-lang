@@ -1,28 +1,25 @@
 import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
-import { Int, MonkeyObject } from '../object'
 import { Lexer } from '../lexer'
 import { Parser } from '../parser'
 import { Interpreter } from '../interpreter'
-import { Bool } from '../object'
+import * as object from '../object'
 
-test('test int eval', () => {
-  const result = testEval('10')
-  assert.equal(result.length, 1)
-  testIntObject(result[0], 10)
+type MoxObject = object.MoxObject
+
+test('interpreter: test integer expression evaluation', () => {
+  const value = testEval('10')
+  testIntObject(value, 10)
 })
 
-test('test bool eval', () => {
-  let result = testEval('true')
-  assert.equal(result.length, 1)
-  testBoolObject(result[0], true)
-
-  result = testEval('false')
-  assert.equal(result.length, 1)
-  testBoolObject(result[0], false)
+test('interpreter: test bool evalutation', () => {
+  let value = testEval('true')
+  testBoolObject(value, true)
+  value = testEval('false')
+  testBoolObject(value, false)
 })
 
-test('test bang eval', () => {
+test('interpreter: test bang operator evaluation', () => {
   const tests: [string, boolean][] = [
     ['!true', false],
     ['!false', true],
@@ -33,8 +30,8 @@ test('test bang eval', () => {
   ]
 
   for (const t of tests) {
-    const result = testEval(t[0])
-    testBoolObject(result[0], t[1])
+    const value = testEval(t[0])
+    testBoolObject(value, t[1])
   }
 })
 
@@ -45,17 +42,19 @@ test('test bang eval', () => {
 function testEval(input: string) {
   const lexer = Lexer.new(input)
   const parser = Parser.new(lexer)
-  const stmts = parser.parse()
+  const program = parser.parse()
+
   const interpreter = new Interpreter()
-  return interpreter.evaluate(stmts)
+
+  return interpreter.interpret(program)
 }
 
-function testIntObject(object: MonkeyObject, value: number) {
-  assert(object instanceof Int)
-  assert.equal(object.value, value)
+function testIntObject(obj: MoxObject, value: number) {
+  assert(obj instanceof object.Int)
+  assert.equal(obj.value, value)
 }
 
-function testBoolObject(object: MonkeyObject, value: boolean) {
-  assert(object instanceof Bool)
-  assert.equal(object.value, value)
+function testBoolObject(obj: MoxObject, value: boolean) {
+  assert(obj instanceof object.Bool)
+  assert.equal(obj.value, value)
 }

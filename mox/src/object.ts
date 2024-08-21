@@ -1,71 +1,74 @@
-import { BlockStmt, Ident } from './ast'
+import { Ident } from './ast/expr'
+import { Block } from './ast/stmt'
 import { Environment } from './environment'
 
-export enum MonkeyObjectType {
+export enum ObjectType {
   INT = 'INT',
   BOOL = 'BOOL',
-  STR = 'STR',
+  STRING = 'STRING',
   NULL = 'NULL',
   RETURN = 'RETURN',
   FUNC = 'FUNC',
 }
 
-export abstract class MonkeyObject {
-  abstract type: MonkeyObjectType
-  abstract display(): string
+export abstract class MoxObject {
+  abstract type: ObjectType
+  abstract toString(): string
 }
 
-export class Null implements MonkeyObject {
-  type: MonkeyObjectType = MonkeyObjectType.NULL
-  display(): string {
+export class Null implements MoxObject {
+  type: ObjectType = ObjectType.NULL
+
+  toString(): string {
     return 'null'
   }
 }
 
-export class Int implements MonkeyObject {
-  type: MonkeyObjectType = MonkeyObjectType.INT
+export class Int implements MoxObject {
+  type: ObjectType = ObjectType.INT
 
   constructor(public value: number) {}
 
-  display(): string {
+  toString(): string {
     return `${this.value}`
   }
 }
 
-export class Bool implements MonkeyObject {
-  type: MonkeyObjectType = MonkeyObjectType.BOOL
+export class Bool implements MoxObject {
+  type: ObjectType = ObjectType.BOOL
   constructor(public value: boolean) {}
 
-  display(): string {
+  toString(): string {
     return `${this.value}`
   }
 }
 
-export class Str implements MonkeyObject {
-  type: MonkeyObjectType = MonkeyObjectType.STR
+export class String implements MoxObject {
+  type: ObjectType = ObjectType.STRING
+
   constructor(public value: string) {}
 
-  display(): string {
+  toString(): string {
     return this.value
   }
 }
 
-export class Return implements MonkeyObject {
-  type: MonkeyObjectType = MonkeyObjectType.RETURN
+export class Return implements MoxObject {
+  type: ObjectType = ObjectType.RETURN
 
-  constructor(public value: MonkeyObject) {}
+  constructor(public value: MoxObject) {}
 
-  display(): string {
-    return `${this.value.display()}`
+  toString(): string {
+    return this.value.toString()
   }
 }
 
-export class Func implements MonkeyObject {
-  type: MonkeyObjectType = MonkeyObjectType.FUNC
+export class Func implements MoxObject {
+  type: ObjectType = ObjectType.FUNC
 
-  constructor(public params: Ident[], public body: BlockStmt, public env: Environment) {}
+  constructor(public params: Ident[], public body: Block, public env: Environment) {}
 
-  display(): string {
-    return `fn (${this.params.map((i) => i.name)})`
+  toString(): string {
+    return `function`
   }
 }

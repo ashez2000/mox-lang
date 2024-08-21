@@ -1,227 +1,104 @@
-import {
-  BlockStmt,
-  Bool,
-  CallExpr,
-  Expr,
-  ExprStmt,
-  ExprVisitor,
-  FnExpr,
-  Ident,
-  IfExpr,
-  Infix,
-  Int,
-  Let,
-  Prefix,
-  Print,
-  Return,
-  Stmt,
-  StmtVisitor,
-  Str,
-} from './ast'
+import * as stmt from './ast/stmt'
+import * as expr from './ast/expr'
+import * as object from './object'
 import { Environment } from './environment'
-import * as obj from './object'
 
-const NULL = new obj.Null()
-const TRUE = new obj.Bool(true)
-const FALSE = new obj.Bool(false)
+type MoxObject = object.MoxObject
 
-export class Interpreter implements ExprVisitor<obj.MonkeyObject>, StmtVisitor<obj.MonkeyObject> {
+const NULL = new object.Null()
+const TRUE = new object.Bool(true)
+const FALSE = new object.Bool(false)
+
+export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObject> {
   private environment = new Environment()
 
-  evaluate(ast: Stmt[]): obj.MonkeyObject[] {
-    const result: obj.MonkeyObject[] = []
+  interpret(program: stmt.Program) {
+    return program.accept(this)
+  }
 
-    for (const s of ast) {
-      const value = s.accept(this)
-      result.push(value)
-      if (value instanceof obj.Return) {
-        return result
-      }
-    }
+  private evaluate(expr: expr.Expr): MoxObject {
+    return expr.accept(this)
+  }
 
-    return result
+  private execute(stmt: stmt.Stmt): MoxObject {
+    return stmt.accept(this)
   }
 
   //
   // statements
   //
 
-  visitLetStmt(stmt: Let): obj.MonkeyObject {
-    const value = stmt.value.accept(this)
-    // TODO: fix ident name
-    this.environment.set(stmt.name.name, value)
+  /** returns the last executed statement */
+  visitProgramStmt(stmt: stmt.Program): object.MoxObject {
+    let value: MoxObject = NULL
+
+    for (const s of stmt.statements) {
+      value = this.execute(s)
+      if (value instanceof object.Return) {
+        return value
+      }
+    }
+
     return value
   }
 
-  visitReturnStmt(stmt: Return): obj.MonkeyObject {
-    const value = stmt.value.accept(this)
-    return new obj.Return(value)
+  visitLetStmt(stmt: stmt.Let): object.MoxObject {
+    return NULL
   }
 
-  visitPrintStmt(stmt: Print): obj.MonkeyObject {
-    const value = stmt.value.accept(this)
-    // TODO: pass log as function
-    console.log(value.display())
-    return value
+  visitReturnStmt(stmt: stmt.Return): object.MoxObject {
+    return NULL
   }
 
-  visitExprStmtStmt(stmt: ExprStmt): obj.MonkeyObject {
-    return stmt.value.accept(this)
+  visitPrintStmt(stmt: stmt.Print): object.MoxObject {
+    return NULL
   }
 
-  visitBlockStmtStmt(stmt: BlockStmt): obj.MonkeyObject {
-    // TODO: looks funny
-    return this.evaluate(stmt.statements).at(-1) ?? NULL
+  visitExprStmt(stmt: stmt.Expr): object.MoxObject {
+    return this.evaluate(stmt.expr)
+  }
+
+  visitBlockStmt(stmt: stmt.Block): object.MoxObject {
+    return NULL
   }
 
   //
   // expressions
   //
 
-  visitIdentExpr(expr: Ident): obj.MonkeyObject {
-    return this.environment.get(expr.name) ?? NULL
-  }
-
-  visitIntExpr(expr: Int): obj.MonkeyObject {
-    return new obj.Int(expr.value)
-  }
-
-  visitBoolExpr(expr: Bool): obj.MonkeyObject {
-    return expr.value ? TRUE : FALSE
-  }
-
-  visitStrExpr(expr: Str): obj.MonkeyObject {
-    return new obj.Str(expr.value)
-  }
-
-  visitPrefixExpr(expr: Prefix): obj.MonkeyObject {
-    const right = expr.right.accept(this)
-
-    switch (expr.operator) {
-      case '!':
-        return this.evalBangExpr(right)
-      case '-':
-        return this.evalMinusPrefixExpr(right)
-      default:
-        return NULL
-    }
-  }
-
-  evalBangExpr(right: obj.MonkeyObject): obj.MonkeyObject {
-    switch (right) {
-      case TRUE:
-        return FALSE
-      case FALSE:
-        return TRUE
-      case NULL:
-        return TRUE
-      default:
-        return FALSE
-    }
-  }
-
-  evalMinusPrefixExpr(right: obj.MonkeyObject): obj.MonkeyObject {
-    if (!(right instanceof obj.Int)) {
-      return NULL
-    }
-    return new obj.Int(-right.value)
-  }
-
-  visitInfixExpr(expr: Infix): obj.MonkeyObject {
-    const left = expr.left.accept(this)
-    const right = expr.right.accept(this)
-    return this.evalInfixExpr(expr.operator, left, right)
-  }
-
-  evalInfixExpr(op: string, left: obj.MonkeyObject, right: obj.MonkeyObject) {
-    if (left instanceof obj.Int && right instanceof obj.Int) {
-      return this.evalIntInfixExpr(op, left, right)
-    }
-
+  visitIdentExpr(expr: expr.Ident): object.MoxObject {
     return NULL
   }
 
-  evalIntInfixExpr(op: string, left: obj.Int, right: obj.Int) {
-    switch (op) {
-      case '+':
-        return new obj.Int(left.value + right.value)
-      case '-':
-        return new obj.Int(left.value - right.value)
-      case '*':
-        return new obj.Int(left.value * right.value)
-      case '/':
-        return new obj.Int(left.value / right.value)
-      default:
-        return NULL
-    }
+  visitIntExpr(expr: expr.Int): object.MoxObject {
+    return new object.Int(expr.value)
   }
 
-  visitIfExprExpr(expr: IfExpr): obj.MonkeyObject {
-    const cond = expr.condidtion.accept(this)
+  visitBoolExpr(expr: expr.Bool): object.MoxObject {
+    return new object.Bool(expr.value)
+  }
 
-    if (this.isTruthy(cond)) {
-      return expr.thenBlock.accept(this)
-    }
+  visitStringExpr(expr: expr.String): object.MoxObject {
+    return new object.String(expr.value)
+  }
 
-    if (expr.elseBlock) {
-      return expr.elseBlock.accept(this)
-    }
-
+  visitPrefixExpr(expr: expr.Prefix): object.MoxObject {
     return NULL
   }
 
-  isTruthy(obj: obj.MonkeyObject): boolean {
-    switch (obj) {
-      case NULL:
-        return false
-      case TRUE:
-        return true
-      case FALSE:
-        return false
-      default:
-        return true
-    }
+  visitInfixExpr(expr: expr.Infix): object.MoxObject {
+    return NULL
   }
 
-  visitFnExprExpr(expr: FnExpr): obj.MonkeyObject {
-    return new obj.Func(expr.parameters, expr.body, this.environment)
+  visitIfExpr(expr: expr.If): object.MoxObject {
+    return NULL
   }
 
-  visitCallExprExpr(expr: CallExpr): obj.MonkeyObject {
-    const fn = expr.fnExpr.accept(this)
-    const args = this.evalExprs(expr.args)
-
-    return this.applyFunc(fn, args)
+  visitFuncExpr(expr: expr.Func): object.MoxObject {
+    return NULL
   }
 
-  evalExprs(exprs: Expr[]) {
-    const result: obj.MonkeyObject[] = []
-
-    for (const e of exprs) {
-      const v = e.accept(this)
-      result.push(v)
-    }
-
-    return result
-  }
-
-  applyFunc(fn: obj.MonkeyObject, args: obj.MonkeyObject[]) {
-    let foo = fn as obj.Func // TODO: error handling
-    const env = this.extendEnv(foo, args)
-    let prev = this.environment
-    this.environment = env
-    const value = foo.body.accept(this)
-    this.environment = prev
-    return value
-  }
-
-  extendEnv(fn: obj.Func, args: obj.MonkeyObject[]) {
-    const env = new Environment(this.environment)
-
-    for (let i = 0; i < args.length; i++) {
-      env.set(fn.params[i].name, args[i])
-    }
-
-    return env
+  visitCallExpr(expr: expr.Call): object.MoxObject {
+    return NULL
   }
 }
