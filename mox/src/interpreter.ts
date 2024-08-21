@@ -137,11 +137,49 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   }
 
   visitFuncExpr(expr: expr.Func): object.MoxObject {
-    return NULL
+    return new object.Func(expr.parameters, expr.body, this.environment)
   }
 
   visitCallExpr(expr: expr.Call): object.MoxObject {
-    return NULL
+    const func = this.evaluate(expr.func)
+    if (!(func instanceof object.Func)) {
+      return error('not a function')
+    }
+
+    const args = this.evalExpressions(expr.args)
+
+    return this.applyFunc(func, args)
+  }
+
+  evalExpressions(exprs: expr.Expr[]) {
+    const values: MoxObject[] = []
+    for (const e of exprs) {
+      // TODO: error handling
+      const value = this.evaluate(e)
+      values.push(value)
+    }
+
+    return values
+  }
+
+  applyFunc(func: object.Func, args: MoxObject[]) {
+    const extenedEnv = this.extendFuncEnv(func, args)
+    const previous = this.environment
+    this.environment = extenedEnv
+    let value = this.execute(func.body)
+    if (value instanceof object.Return) {
+      value = value.value
+    }
+    this.environment = previous
+    return value
+  }
+
+  extendFuncEnv(func: object.Func, args: MoxObject[]) {
+    const env = new Environment(func.env)
+    for (let i = 0; i < func.params.length; i++) {
+      env.set(func.params[i].name, args[i])
+    }
+    return env
   }
 }
 
