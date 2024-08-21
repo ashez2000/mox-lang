@@ -69,6 +69,7 @@ export interface ExprVisitor<T> {
   visitIdentExpr(expr: Ident): T
   visitBoolExpr(expr: Bool): T
   visitIntExpr(expr: Int): T
+  visitStrExpr(expr: Str): T
   visitPrefixExpr(expr: Prefix): T
   visitInfixExpr(expr: Infix): T
   visitIfExprExpr(expr: IfExpr): T
@@ -103,6 +104,16 @@ export class Int extends Expr {
 
   accept<T>(visitor: ExprVisitor<T>): T {
     return visitor.visitIntExpr(this)
+  }
+}
+
+export class Str extends Expr {
+  constructor(public token: Token, public value: string) {
+    super()
+  }
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitStrExpr(this)
   }
 }
 

@@ -13,6 +13,7 @@ import {
   Prefix,
   Return,
   Stmt,
+  Str,
 } from './ast'
 
 import { Lexer } from './lexer'
@@ -40,6 +41,7 @@ export class Parser {
     this.prefixParseFns = new Map([
       [TokenType.IDENT, this.parseIdent.bind(this)],
       [TokenType.INT, this.parseInteger.bind(this)],
+      [TokenType.STRING, this.parseStr.bind(this)],
       [TokenType.TRUE, this.parseBool.bind(this)],
       [TokenType.FALSE, this.parseBool.bind(this)],
       [TokenType.BANG, this.parsePrefix.bind(this)],
@@ -197,6 +199,10 @@ export class Parser {
 
   private parseBool(): Expr {
     return new Bool(this.curToken, this.curToken.literal == 'true' ? true : false)
+  }
+
+  private parseStr(): Expr {
+    return new Str(this.curToken, this.curToken.literal)
   }
 
   private parsePrefix(): Prefix | null {

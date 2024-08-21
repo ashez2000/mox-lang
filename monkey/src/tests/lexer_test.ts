@@ -5,7 +5,7 @@ import { Lexer } from '../lexer.js'
 import { Token, TokenType } from '../token.js'
 
 test('test nextToken', () => {
-  const input = `
+  const input = `\
     let five = 5;
     let ten = 10;
     let add = fn (x, y) { x + y; };
@@ -19,6 +19,9 @@ test('test nextToken', () => {
 
     10 == 10;
     10 != 9;
+
+    "foobar";
+    "foo bar";
   `
 
   const tests = [
@@ -114,6 +117,12 @@ test('test nextToken', () => {
     /* 70 */ Token.new(TokenType.NE, '!='),
     /* 71 */ Token.new(TokenType.INT, '9'),
     /* 72 */ Token.new(TokenType.SEMICOLON, ';'),
+
+    // "foobar"; "foo bar";
+    /* 73 */ Token.new(TokenType.STRING, 'foobar'),
+    /* 74 */ Token.new(TokenType.SEMICOLON, ';'),
+    /* 75 */ Token.new(TokenType.STRING, 'foo bar'),
+    /* 76 */ Token.new(TokenType.SEMICOLON, ';'),
   ]
 
   const lexer = Lexer.new(input)
@@ -122,16 +131,8 @@ test('test nextToken', () => {
     const tok = lexer.nextToken()
     const t = tests[i]
 
-    assert.equal(
-      tok.type,
-      t.type,
-      `tests[${i}] expected=${t.type}, got=${tok.type}`
-    )
+    assert.equal(tok.type, t.type, `tests[${i}] expected=${t.type}, got=${tok.type}`)
 
-    assert.equal(
-      tok.literal,
-      t.literal,
-      `tests[${i}] expected=${t.literal}, got=${tok.literal}`
-    )
+    assert.equal(tok.literal, t.literal, `tests[${i}] expected=${t.literal}, got=${tok.literal}`)
   }
 })

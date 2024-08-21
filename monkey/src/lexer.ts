@@ -79,6 +79,11 @@ export class Lexer {
       case '/':
         tok = Token.new(TokenType.SLASH, this.ch, this.line)
         break
+
+      case '"': // TODO: looks funny (line)
+        tok = Token.new(TokenType.STRING, this.readString(), this.line)
+        break
+
       case '\0':
         tok = Token.new(TokenType.EOF, this.ch, this.line)
         break
@@ -132,6 +137,17 @@ export class Lexer {
     while (isDigit(this.ch)) {
       this.readChar()
     }
+    return this.input.slice(position, this.position)
+  }
+
+  private readString() {
+    this.readChar()
+    const position = this.position
+
+    while (this.ch != '"' && this.ch != '\0') {
+      this.readChar()
+    }
+
     return this.input.slice(position, this.position)
   }
 

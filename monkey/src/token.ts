@@ -3,6 +3,7 @@ export enum TokenType {
   EOF = 'EOF',
   IDENT = 'IDENT',
   INT = 'INT',
+  STRING = 'STRING',
   ASSIGN = 'ASSIGN',
   PLUS = 'PLUS',
   MINUS = 'MINUS',
@@ -31,7 +32,7 @@ export enum TokenType {
 export class Token {
   constructor(public type: TokenType, public literal: string, public line: number) {}
 
-  static new(type: TokenType, literal: string, line: number) {
+  static new(type: TokenType, literal: string, line: number = 0) {
     return new Token(type, literal, line)
   }
 }

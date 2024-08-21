@@ -22,6 +22,7 @@ function main(args: string[]) {
     'Ident    - token: Token, name: string',
     'Bool     - token: Token, value: boolean',
     'Int      - token: Token, value: number',
+    'Str      - token: Token, value: string',
     'Prefix   - token: Token, operator: string, right: Expr',
     'Infix    - token: Token, operator: string, left: Expr, right: Expr',
     'IfExpr   - token: Token, condidtion: Expr, thenBlock: BlockStmt, elseBlock: BlockStmt | null',

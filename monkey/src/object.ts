@@ -4,6 +4,7 @@ import { Environment } from './environment'
 export enum MonkeyObjectType {
   INT = 'INT',
   BOOL = 'BOOL',
+  STR = 'STR',
   NULL = 'NULL',
   RETURN = 'RETURN',
   FUNC = 'FUNC',
@@ -37,6 +38,15 @@ export class Bool implements MonkeyObject {
 
   display(): string {
     return `${this.value}`
+  }
+}
+
+export class Str implements MonkeyObject {
+  type: MonkeyObjectType = MonkeyObjectType.STR
+  constructor(public value: string) {}
+
+  display(): string {
+    return this.value
   }
 }
 

@@ -15,6 +15,7 @@ import {
   Return,
   Stmt,
   StmtVisitor,
+  Str,
 } from './ast'
 import { Environment } from './environment'
 import * as obj from './object'
@@ -79,6 +80,10 @@ export class Interpreter implements ExprVisitor<obj.MonkeyObject>, StmtVisitor<o
 
   visitBoolExpr(expr: Bool): obj.MonkeyObject {
     return expr.value ? TRUE : FALSE
+  }
+
+  visitStrExpr(expr: Str): obj.MonkeyObject {
+    return new obj.Str(expr.value)
   }
 
   visitPrefixExpr(expr: Prefix): obj.MonkeyObject {
