@@ -16,6 +16,7 @@ import {
   Stmt,
   StmtVisitor,
 } from './ast'
+import { Environment } from './environment'
 import * as obj from './object'
 
 const NULL = new obj.Null()
@@ -23,6 +24,8 @@ const TRUE = new obj.Bool(true)
 const FALSE = new obj.Bool(false)
 
 export class Interpreter implements ExprVisitor<obj.MonkeyObject>, StmtVisitor<obj.MonkeyObject> {
+  private environment = new Environment()
+
   evaluate(ast: Stmt[]): obj.MonkeyObject[] {
     const result: obj.MonkeyObject[] = []
 
@@ -42,7 +45,10 @@ export class Interpreter implements ExprVisitor<obj.MonkeyObject>, StmtVisitor<o
   //
 
   visitLetStmt(stmt: Let): obj.MonkeyObject {
-    return NULL
+    const value = stmt.value.accept(this)
+    // TODO: fix ident name
+    this.environment.set(stmt.name.name, value)
+    return value
   }
 
   visitReturnStmt(stmt: Return): obj.MonkeyObject {
@@ -64,7 +70,7 @@ export class Interpreter implements ExprVisitor<obj.MonkeyObject>, StmtVisitor<o
   //
 
   visitIdentExpr(expr: Ident): obj.MonkeyObject {
-    return NULL
+    return this.environment.get(expr.name) ?? NULL
   }
 
   visitIntExpr(expr: Int): obj.MonkeyObject {
