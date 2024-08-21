@@ -146,6 +146,15 @@ function evalInfixExpression(operator: string, left: MoxObject, right: MoxObject
   if (left instanceof object.Int && right instanceof object.Int) {
     return evalIntInfixExpression(operator, left, right)
   }
+
+  if (operator == '==') {
+    return naiveBooltoObject(left == right)
+  }
+
+  if (operator == '!=') {
+    return naiveBooltoObject(left != right)
+  }
+
   return NULL
 }
 
