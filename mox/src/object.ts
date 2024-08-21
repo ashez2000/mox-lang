@@ -9,6 +9,7 @@ export enum ObjectType {
   NULL = 'NULL',
   RETURN = 'RETURN',
   FUNC = 'FUNC',
+  ERROR = 'ERROR',
 }
 
 export abstract class MoxObject {
@@ -70,5 +71,15 @@ export class Func implements MoxObject {
 
   toString(): string {
     return `function`
+  }
+}
+
+export class Error implements MoxObject {
+  type: ObjectType = ObjectType.ERROR
+
+  constructor(public message: string) {}
+
+  toString(): string {
+    return this.message
   }
 }

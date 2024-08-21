@@ -34,8 +34,13 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
 
     for (const s of stmt.statements) {
       value = this.execute(s)
+
       if (value instanceof object.Return) {
         return value.value // unwrap return value
+      }
+
+      if (value instanceof object.Error) {
+        return value
       }
     }
 
@@ -64,8 +69,13 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
 
     for (const s of stmt.statements) {
       value = this.execute(s)
+
       if (value instanceof object.Return) {
         return value // bubble up return value
+      }
+
+      if (value instanceof object.Error) {
+        return value
       }
     }
 
@@ -100,7 +110,7 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
       case '-':
         return evalMinusPrifixOperator(right)
       default:
-        return NULL
+        return error(`unknown operator: '${expr.operator}${right.type}'`)
     }
   }
 
@@ -169,7 +179,7 @@ function evalBangOperator(obj: MoxObject): MoxObject {
 
 function evalMinusPrifixOperator(obj: MoxObject): MoxObject {
   if (!(obj instanceof object.Int)) {
-    return NULL
+    return error(`unknown operator: '-' ${obj.type}`)
   }
 
   return new object.Int(-obj.value)
@@ -188,7 +198,11 @@ function evalInfixExpression(operator: string, left: MoxObject, right: MoxObject
     return naiveBooltoObject(left != right)
   }
 
-  return NULL
+  if (left.type !== right.type) {
+    return error(`type mismatch: ${left.type} '${operator}' ${right.type}`)
+  }
+
+  return error(`unknown operator: '${operator}'`)
 }
 
 function evalIntInfixExpression(operator: string, left: object.Int, right: object.Int) {
@@ -210,6 +224,10 @@ function evalIntInfixExpression(operator: string, left: object.Int, right: objec
     case '!=':
       return naiveBooltoObject(left.value != right.value)
     default:
-      return NULL
+      return error(`unknown operator: '${operator}'`)
   }
+}
+
+function error(message: string) {
+  return new object.Error(message)
 }
