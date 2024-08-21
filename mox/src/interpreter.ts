@@ -87,6 +87,8 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
     switch (expr.operator) {
       case '!':
         return evalBangOperator(right)
+      case '-':
+        return evalMinusPrifixOperator(right)
       default:
         return NULL
     }
@@ -124,4 +126,12 @@ function evalBangOperator(obj: MoxObject): MoxObject {
     default:
       return FALSE
   }
+}
+
+function evalMinusPrifixOperator(obj: MoxObject): MoxObject {
+  if (!(obj instanceof object.Int)) {
+    return NULL
+  }
+
+  return new object.Int(-obj.value)
 }

@@ -8,8 +8,17 @@ import * as object from '../object'
 type MoxObject = object.MoxObject
 
 test('interpreter: test integer expression evaluation', () => {
-  const value = testEval('10')
-  testIntObject(value, 10)
+  const tests: [string, number][] = [
+    ['5', 5],
+    ['10', 10],
+    ['-5', -5],
+    ['-10', -10],
+  ]
+
+  for (const t of tests) {
+    const value = testEval(t[0])
+    testIntObject(value, t[1])
+  }
 })
 
 test('interpreter: test bool evalutation', () => {
