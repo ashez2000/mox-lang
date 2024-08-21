@@ -75,7 +75,7 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   }
 
   visitBoolExpr(expr: expr.Bool): object.MoxObject {
-    return expr.value ? TRUE : FALSE
+    return naiveBooltoObject(expr.value)
   }
 
   visitStringExpr(expr: expr.String): object.MoxObject {
@@ -95,7 +95,9 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   }
 
   visitInfixExpr(expr: expr.Infix): object.MoxObject {
-    return NULL
+    const left = this.evaluate(expr.left)
+    const right = this.evaluate(expr.right)
+    return evalInfixExpression(expr.operator, left, right)
   }
 
   visitIfExpr(expr: expr.If): object.MoxObject {
@@ -114,6 +116,10 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
 //
 // helpers
 //
+
+function naiveBooltoObject(bool: boolean) {
+  return bool ? TRUE : FALSE
+}
 
 function evalBangOperator(obj: MoxObject): MoxObject {
   switch (obj) {
@@ -134,4 +140,34 @@ function evalMinusPrifixOperator(obj: MoxObject): MoxObject {
   }
 
   return new object.Int(-obj.value)
+}
+
+function evalInfixExpression(operator: string, left: MoxObject, right: MoxObject) {
+  if (left instanceof object.Int && right instanceof object.Int) {
+    return evalIntInfixExpression(operator, left, right)
+  }
+  return NULL
+}
+
+function evalIntInfixExpression(operator: string, left: object.Int, right: object.Int) {
+  switch (operator) {
+    case '+':
+      return new object.Int(left.value + right.value)
+    case '-':
+      return new object.Int(left.value - right.value)
+    case '*':
+      return new object.Int(left.value * right.value)
+    case '/':
+      return new object.Int(left.value / right.value)
+    case '<':
+      return naiveBooltoObject(left.value < right.value)
+    case '>':
+      return naiveBooltoObject(left.value > right.value)
+    case '==':
+      return naiveBooltoObject(left.value == right.value)
+    case '!=':
+      return naiveBooltoObject(left.value != right.value)
+    default:
+      return NULL
+  }
 }
