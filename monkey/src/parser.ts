@@ -11,6 +11,7 @@ import {
   Int,
   Let,
   Prefix,
+  Print,
   Return,
   Stmt,
   Str,
@@ -95,6 +96,8 @@ export class Parser {
         return this.parseLetStatement()
       case TokenType.RETURN:
         return this.parseReturnStatement()
+      case TokenType.PRINT:
+        return this.parsePrintStatement()
       default:
         return this.parseExprStmt()
     }
@@ -143,6 +146,22 @@ export class Parser {
     }
 
     return new Return(returnToken, value)
+  }
+
+  // print <expr>;
+  private parsePrintStatement(): Print | null {
+    const printTok = this.curToken
+    this.nextToken()
+    const value = this.parseExpression(Precedence.LOWEST)
+    if (!value) {
+      return null
+    }
+
+    if (this.peekTokenIs(TokenType.SEMICOLON)) {
+      this.nextToken()
+    }
+
+    return new Print(printTok, value)
   }
 
   private parseExprStmt(): ExprStmt | null {

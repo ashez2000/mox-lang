@@ -16,6 +16,7 @@ function main(args: string[]) {
     'Return    - token: Token, value: Expr',
     'ExprStmt  - token: Token, value: Expr',
     'BlockStmt - token: Token, statements: Stmt[]',
+    'Print     - token: Token, value: Expr',
   ])
 
   const expr = defineAst('Expr', [

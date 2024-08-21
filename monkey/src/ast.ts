@@ -15,6 +15,7 @@ export interface StmtVisitor<T> {
   visitReturnStmt(stmt: Return): T
   visitExprStmtStmt(stmt: ExprStmt): T
   visitBlockStmtStmt(stmt: BlockStmt): T
+  visitPrintStmt(stmt: Print): T
 }
 
 export class Let extends Stmt {
@@ -54,6 +55,16 @@ export class BlockStmt extends Stmt {
 
   accept<T>(visitor: StmtVisitor<T>): T {
     return visitor.visitBlockStmtStmt(this)
+  }
+}
+
+export class Print extends Stmt {
+  constructor(public token: Token, public value: Expr) {
+    super()
+  }
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitPrintStmt(this)
   }
 }
 

@@ -12,6 +12,7 @@ import {
   Int,
   Let,
   Prefix,
+  Print,
   Return,
   Stmt,
   StmtVisitor,
@@ -55,6 +56,13 @@ export class Interpreter implements ExprVisitor<obj.MonkeyObject>, StmtVisitor<o
   visitReturnStmt(stmt: Return): obj.MonkeyObject {
     const value = stmt.value.accept(this)
     return new obj.Return(value)
+  }
+
+  visitPrintStmt(stmt: Print): obj.MonkeyObject {
+    const value = stmt.value.accept(this)
+    // TODO: pass log as function
+    console.log(value.display())
+    return value
   }
 
   visitExprStmtStmt(stmt: ExprStmt): obj.MonkeyObject {

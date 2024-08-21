@@ -170,6 +170,7 @@ const keywords = new Map<string, TokenType>([
   ['if', TokenType.IF],
   ['else', TokenType.ELSE],
   ['return', TokenType.RETURN],
+  ['print', TokenType.PRINT],
 ])
 
 function isLetter(ch: string): boolean {

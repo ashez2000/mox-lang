@@ -27,6 +27,7 @@ export enum TokenType {
   IF = 'IF',
   ELSE = 'ELSE',
   RETURN = 'RETURN',
+  PRINT = 'PRINT',
 }
 
 export class Token {
