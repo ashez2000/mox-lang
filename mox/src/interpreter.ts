@@ -48,7 +48,9 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   }
 
   visitLetStmt(stmt: stmt.Let): object.MoxObject {
-    return NULL
+    const value = this.evaluate(stmt.expr)
+    this.environment.set(stmt.name.name, value)
+    return value
   }
 
   visitReturnStmt(stmt: stmt.Return): object.MoxObject {
@@ -87,7 +89,7 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   //
 
   visitIdentExpr(expr: expr.Ident): object.MoxObject {
-    return NULL
+    return this.environment.get(expr.name) ?? NULL
   }
 
   visitIntExpr(expr: expr.Int): object.MoxObject {

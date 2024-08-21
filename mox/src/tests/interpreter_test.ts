@@ -109,8 +109,20 @@ test('interpreter: test return statement execution', () => {
 
   for (const t of tests) {
     const value = testEval(t[0])
-    console.log(value)
     testIntObject(value, t[1])
+  }
+})
+
+test('interpreter: test let statement execution', () => {
+  const tests: [string, number][] = [
+    ['let a = 5; a;', 5],
+    ['let a = 5 * 5; a;', 25],
+    ['let a = 5; let b = a; b;', 5],
+    ['let a = 5; let b = a; let c = a + b + 5; c;', 15],
+  ]
+
+  for (const t of tests) {
+    testIntObject(testEval(t[0]), t[1])
   }
 })
 
