@@ -1,8 +1,5 @@
 import readline from 'node:readline'
-
-import { Lexer } from './lexer'
-import { Parser } from './parser'
-import { Interpreter } from './interpreter'
+import run from './run'
 
 function prompt(): Promise<string> {
   const rl = readline.createInterface({
@@ -19,22 +16,17 @@ function prompt(): Promise<string> {
 }
 
 export async function repl() {
-  const interpreter = new Interpreter()
-
   while (true) {
     const input = await prompt()
-    const lexer = Lexer.new(input)
-    const parser = Parser.new(lexer)
+    const { result, errors } = run(input)
 
-    const stmts = parser.parse()
-    if (parser.errors.length) {
-      for (const e of parser.errors) {
+    if (errors.length) {
+      for (const e of errors) {
         console.log(e)
       }
       continue
     }
 
-    const result = interpreter.evaluate(stmts)
     for (const r of result) {
       console.log(r.display())
     }
