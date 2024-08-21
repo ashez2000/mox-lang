@@ -1,8 +1,8 @@
 {
-  "name": "monkey-lang-ts",
+  "name": "mox-lang",
   "version": "1.0.0",
   "scripts": {
-    "start": "npm start --prefix monkey",
-    "generate": "npm run generate --prefix generate-ast -- ../monkey/src/ast"
+    "start": "npm start --prefix mox",
+    "generate": "npm run generate --prefix generate-ast -- ../mox/src/ast"
   }
 }
