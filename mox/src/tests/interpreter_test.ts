@@ -77,6 +77,27 @@ test('interpreter: test bang operator evaluation', () => {
   }
 })
 
+test('interpreter: test if else expression evalutation', () => {
+  const tests: [string, number | null][] = [
+    ['if (true) { 10 }', 10],
+    ['if (false) { 10 }', null],
+    ['if (1) { 10 }', 10],
+    ['if (1 < 2) { 10 }', 10],
+    ['if (1 > 2) { 10 }', null],
+    ['if (1 > 2) { 10 } else { 20 }', 20],
+    ['if (1 < 2) { 10 } else { 20 }', 10],
+  ]
+
+  for (const t of tests) {
+    const value = testEval(t[0])
+    if (t[1] != null) {
+      testIntObject(value, t[1])
+    } else {
+      testNullObject(value)
+    }
+  }
+})
+
 //
 // test utils
 //
@@ -99,4 +120,8 @@ function testIntObject(obj: MoxObject, value: number) {
 function testBoolObject(obj: MoxObject, value: boolean) {
   assert(obj instanceof object.Bool)
   assert.equal(obj.value, value)
+}
+
+function testNullObject(obj: MoxObject) {
+  assert(obj instanceof object.Null)
 }

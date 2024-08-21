@@ -58,8 +58,9 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
     return this.evaluate(stmt.expr)
   }
 
-  visitBlockStmt(stmt: stmt.Block): object.MoxObject {
-    return NULL
+  visitBlockStmt(stmts: stmt.Block): object.MoxObject {
+    // TODO: looks funny
+    return this.interpret(stmt.Program.new(stmts.statements))
   }
 
   //
@@ -101,6 +102,16 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   }
 
   visitIfExpr(expr: expr.If): object.MoxObject {
+    const condition = this.evaluate(expr.condidtion)
+
+    if (isTruthy(condition)) {
+      return this.execute(expr.consequence)
+    }
+
+    if (expr.alternative) {
+      return this.execute(expr.alternative)
+    }
+
     return NULL
   }
 
@@ -119,6 +130,19 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
 
 function naiveBooltoObject(bool: boolean) {
   return bool ? TRUE : FALSE
+}
+
+function isTruthy(obj: MoxObject) {
+  switch (obj) {
+    case NULL:
+      return false
+    case TRUE:
+      return true
+    case FALSE:
+      return false
+    default:
+      return true
+  }
 }
 
 function evalBangOperator(obj: MoxObject): MoxObject {
