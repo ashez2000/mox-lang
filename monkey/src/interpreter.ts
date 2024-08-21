@@ -171,10 +171,44 @@ export class Interpreter implements ExprVisitor<obj.MonkeyObject>, StmtVisitor<o
   }
 
   visitFnExprExpr(expr: FnExpr): obj.MonkeyObject {
-    return NULL
+    return new obj.Func(expr.parameters, expr.body, this.environment)
   }
 
   visitCallExprExpr(expr: CallExpr): obj.MonkeyObject {
-    return NULL
+    const fn = expr.fnExpr.accept(this)
+    const args = this.evalExprs(expr.args)
+
+    return this.applyFunc(fn, args)
+  }
+
+  evalExprs(exprs: Expr[]) {
+    const result: obj.MonkeyObject[] = []
+
+    for (const e of exprs) {
+      const v = e.accept(this)
+      result.push(v)
+    }
+
+    return result
+  }
+
+  applyFunc(fn: obj.MonkeyObject, args: obj.MonkeyObject[]) {
+    let foo = fn as obj.Func // TODO: error handling
+    const env = this.extendEnv(foo, args)
+    let prev = this.environment
+    this.environment = env
+    const value = foo.body.accept(this)
+    this.environment = prev
+    return value
+  }
+
+  extendEnv(fn: obj.Func, args: obj.MonkeyObject[]) {
+    const env = new Environment(this.environment)
+
+    for (let i = 0; i < args.length; i++) {
+      env.set(fn.params[i].name, args[i])
+    }
+
+    return env
   }
 }

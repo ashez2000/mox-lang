@@ -1,8 +1,12 @@
+import { BlockStmt, Ident } from './ast'
+import { Environment } from './environment'
+
 export enum MonkeyObjectType {
   INT = 'INT',
   BOOL = 'BOOL',
   NULL = 'NULL',
   RETURN = 'RETURN',
+  FUNC = 'FUNC',
 }
 
 export abstract class MonkeyObject {
@@ -43,5 +47,15 @@ export class Return implements MonkeyObject {
 
   display(): string {
     return `${this.value.display()}`
+  }
+}
+
+export class Func implements MonkeyObject {
+  type: MonkeyObjectType = MonkeyObjectType.FUNC
+
+  constructor(public params: Ident[], public body: BlockStmt, public env: Environment) {}
+
+  display(): string {
+    return `fn (${this.params.map((i) => i.name)})`
   }
 }
