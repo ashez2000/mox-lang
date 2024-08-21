@@ -75,7 +75,7 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   }
 
   visitBoolExpr(expr: expr.Bool): object.MoxObject {
-    return new object.Bool(expr.value)
+    return expr.value ? TRUE : FALSE
   }
 
   visitStringExpr(expr: expr.String): object.MoxObject {
@@ -83,7 +83,13 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   }
 
   visitPrefixExpr(expr: expr.Prefix): object.MoxObject {
-    return NULL
+    const right = this.evaluate(expr.right)
+    switch (expr.operator) {
+      case '!':
+        return evalBangOperator(right)
+      default:
+        return NULL
+    }
   }
 
   visitInfixExpr(expr: expr.Infix): object.MoxObject {
@@ -100,5 +106,22 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
 
   visitCallExpr(expr: expr.Call): object.MoxObject {
     return NULL
+  }
+}
+
+//
+// helpers
+//
+
+function evalBangOperator(obj: MoxObject): MoxObject {
+  switch (obj) {
+    case TRUE:
+      return FALSE
+    case FALSE:
+      return TRUE
+    case NULL:
+      return TRUE
+    default:
+      return FALSE
   }
 }
