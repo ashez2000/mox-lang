@@ -59,7 +59,9 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   }
 
   visitPrintStmt(stmt: stmt.Print): object.MoxObject {
-    return NULL
+    const value = this.evaluate(stmt.expr)
+    console.log(value.toString())
+    return value
   }
 
   visitExprStmt(stmt: stmt.Expr): object.MoxObject {

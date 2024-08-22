@@ -1,5 +1,11 @@
-import { repl } from './repl.js'
+import repl from './repl.js'
+import run from './run.js'
 
-console.log('Welcome to monkey v0.1.0')
+const inputPath = process.argv[2]
 
-repl()
+if (inputPath) {
+  run(inputPath)
+} else {
+  console.log('Welcome to mox-lang v0.1.0')
+  repl()
+}

@@ -1,18 +1,20 @@
+import fs from 'node:fs'
+
 import { Lexer } from './lexer'
 import { Parser } from './parser'
 import { Interpreter } from './interpreter'
 
-export default function run(input: string) {
+export default function run(path: string) {
+  const input = fs.readFileSync(path, 'utf-8')
+
   const lexer = Lexer.new(input)
   const parser = Parser.new(lexer)
-  const errors = []
 
-  const stmts = parser.parse()
+  const program = parser.parse()
   for (const e of parser.errors) {
-    errors.push(e)
+    console.error(e)
   }
 
   const interpreter = new Interpreter()
-  const result = interpreter.evaluate(stmts)
-  return { result, errors }
+  interpreter.interpret(program)
 }

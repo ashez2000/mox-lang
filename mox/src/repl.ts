@@ -1,5 +1,7 @@
 import readline from 'node:readline'
-import run from './run'
+import { Lexer } from './lexer'
+import { Parser } from './parser'
+import { Interpreter } from './interpreter'
 
 function prompt(): Promise<string> {
   const rl = readline.createInterface({
@@ -8,27 +10,30 @@ function prompt(): Promise<string> {
   })
 
   return new Promise((resolve) => {
-    rl.question('>> ', (input) => {
+    rl.question('> ', (input) => {
       rl.close()
       resolve(input)
     })
   })
 }
 
-export async function repl() {
+export default async function repl() {
+  const interpreter = new Interpreter()
+
   while (true) {
     const input = await prompt()
-    const { result, errors } = run(input)
+    const lexer = Lexer.new(input)
+    const parser = Parser.new(lexer)
+    const program = parser.parse()
 
-    if (errors.length) {
-      for (const e of errors) {
+    if (parser.errors.length) {
+      for (const e of parser.errors) {
         console.log(e)
       }
       continue
     }
 
-    for (const r of result) {
-      console.log(r.display())
-    }
+    const result = interpreter.interpret(program)
+    console.log(result.toString())
   }
 }
