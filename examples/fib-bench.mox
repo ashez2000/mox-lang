@@ -3,4 +3,10 @@ let fib = fn (n) {
     return fib(n - 1) + fib(n - 2);
 }
 
-print fib(6);
+let s = clock();
+
+fib(30);
+
+let e = clock();
+
+print e - s;
