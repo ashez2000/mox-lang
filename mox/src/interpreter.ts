@@ -1,6 +1,7 @@
 import * as stmt from './ast/stmt'
 import * as expr from './ast/expr'
 import * as object from './object'
+import builtin from './builtin'
 import { Environment } from './environment'
 
 type MoxObject = object.MoxObject
@@ -98,7 +99,7 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   //
 
   visitIdentExpr(expr: expr.Ident): object.MoxObject {
-    return this.environment.get(expr.name) ?? NULL
+    return this.environment.get(expr.name) ?? builtin.get(expr.name) ?? NULL
   }
 
   visitIntExpr(expr: expr.Int): object.MoxObject {
@@ -151,13 +152,17 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
 
   visitCallExpr(expr: expr.Call): object.MoxObject {
     const func = this.evaluate(expr.func)
-    if (!(func instanceof object.Func)) {
-      return error('not a function')
-    }
-
     const args = this.evalExpressions(expr.args)
 
-    return this.applyFunc(func, args)
+    if (func instanceof object.Func) {
+      return this.applyFunc(func, args)
+    }
+
+    if (func instanceof object.Builtin) {
+      return func.func(...args)
+    }
+
+    return error('not a function')
   }
 
   evalExpressions(exprs: expr.Expr[]) {

@@ -9,6 +9,7 @@ export enum ObjectType {
   NULL = 'NULL',
   RETURN = 'RETURN',
   FUNC = 'FUNC',
+  BUILTIN = 'BUILTIN',
   ERROR = 'ERROR',
 }
 
@@ -71,6 +72,18 @@ export class Func implements MoxObject {
 
   toString(): string {
     return `function`
+  }
+}
+
+export type BuitlinFn = (...args: MoxObject[]) => MoxObject
+
+export class Builtin implements MoxObject {
+  type: ObjectType = ObjectType.BUILTIN
+
+  constructor(public func: BuitlinFn) {}
+
+  toString(): string {
+    return 'builtin'
   }
 }
 
