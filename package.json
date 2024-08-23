@@ -1,8 +1,9 @@
 {
   "name": "mox-lang",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "scripts": {
     "start": "npm start --prefix mox",
+    "build": "pnpm run -r build",
     "generate": "npm run generate --prefix generate-ast -- ../mox/src/ast"
   }
 }
