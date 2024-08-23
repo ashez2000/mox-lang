@@ -1,13 +1,16 @@
 {
   "name": "mox",
   "version": "1.0.0",
+  "main": "./dist/lib.mjs",
   "scripts": {
     "start": "tsx ./src/main.ts",
-    "test": "tsx --test ./src/tests/*"
+    "test": "tsx --test ./src/tests/*",
+    "build": "tsup ./src/lib.ts --dts --format esm"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
     "@types/node": "^22.2.0",
+    "tsup": "^8.2.4",
     "tsx": "^4.17.0",
     "typescript": "^5.5.4"
   }
