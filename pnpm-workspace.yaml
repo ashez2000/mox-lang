@@ -1,0 +1,4 @@
+packages:
+  - 'mox'
+  - 'web'
+  - 'generate-ast'
