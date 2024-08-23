@@ -62,7 +62,7 @@ export class Parser {
   parse(): stmt.Program {
     const statements: stmt.Stmt[] = []
 
-    while (this.curToken.type != TokenType.EOF) {
+    while (!this.curTokenIs(TokenType.EOF)) {
       const stmt = this.parseStatement()
       if (stmt) {
         statements.push(stmt)
@@ -94,13 +94,13 @@ export class Parser {
   private parseLetStatement(): stmt.Let | null {
     const letToken = this.curToken
 
-    if (!this.expectPeek(TokenType.IDENT)) {
+    if (!this.expectPeek(TokenType.IDENT, "expected 'identifier' after 'let'")) {
       return null
     }
 
     const ident = this.parseIdent()
 
-    if (!this.expectPeek(TokenType.ASSIGN)) {
+    if (!this.expectPeek(TokenType.ASSIGN, "expected '=' after 'identifier'")) {
       return null
     }
 
@@ -248,7 +248,7 @@ export class Parser {
     this.nextToken() // "("
 
     const expr = this.parseExpression(Precedence.LOWEST)
-    if (!this.expectPeek(TokenType.RPAREN)) {
+    if (!this.expectPeek(TokenType.RPAREN, "expected ')' for the grouped expression")) {
       return null
     }
 
@@ -272,7 +272,7 @@ export class Parser {
   private parseIfExpr(): expr.If | null {
     const token = this.curToken
 
-    if (!this.expectPeek(TokenType.LPAREN)) {
+    if (!this.expectPeek(TokenType.LPAREN, "expected '(' after 'if'")) {
       return null
     }
 
@@ -283,11 +283,11 @@ export class Parser {
       return null
     }
 
-    if (!this.expectPeek(TokenType.RPAREN)) {
+    if (!this.expectPeek(TokenType.RPAREN, "expected ')' after 'if condition'")) {
       return null
     }
 
-    if (!this.expectPeek(TokenType.LBRACE)) {
+    if (!this.expectPeek(TokenType.LBRACE, "expected '{' after 'if condition'")) {
       return null
     }
 
@@ -296,7 +296,7 @@ export class Parser {
     let alternative: stmt.Block | null = null
     if (this.peekTokenIs(TokenType.ELSE)) {
       this.nextToken()
-      if (!this.expectPeek(TokenType.LBRACE)) {
+      if (!this.expectPeek(TokenType.LBRACE, "expected '{' after 'else'")) {
         return null
       }
       alternative = this.parseBlock()
@@ -309,7 +309,7 @@ export class Parser {
   private parseFnExpr(): expr.Func | null {
     const fnToken = this.curToken
 
-    if (!this.expectPeek(TokenType.LPAREN)) {
+    if (!this.expectPeek(TokenType.LPAREN, "expected '(' after 'fn'")) {
       return null
     }
 
@@ -318,7 +318,7 @@ export class Parser {
       return null
     }
 
-    if (!this.expectPeek(TokenType.LBRACE)) {
+    if (!this.expectPeek(TokenType.LBRACE, "expected '{' after function parameters")) {
       return null
     }
 
@@ -347,7 +347,7 @@ export class Parser {
       idents.push(ident)
     }
 
-    if (!this.expectPeek(TokenType.RPAREN)) {
+    if (!this.expectPeek(TokenType.RPAREN, "expected ')' after function parameters")) {
       return null
     }
 
@@ -395,7 +395,7 @@ export class Parser {
       args.push(expr)
     }
 
-    if (!this.expectPeek(TokenType.RPAREN)) {
+    if (!this.expectPeek(TokenType.RPAREN, "expected ')' for the call expression")) {
       return null
     }
 
@@ -420,19 +420,18 @@ export class Parser {
   }
 
   /** if peek token is a match it calls nextToken() */
-  private expectPeek(type: TokenType): boolean {
+  private expectPeek(type: TokenType, message: string): boolean {
     if (this.peekTokenIs(type)) {
       this.nextToken()
       return true
     }
-    this.errors.push(
-      `[line ${this.peekToken.line}]: parse: error: expected peek token to be ${type}, got ${this.peekToken.type}`
-    )
+
+    this.report(this.curToken, message)
     return false
   }
 
   private noPrifixParseFnError() {
-    this.errors.push(`[line ${this.curToken.line}]: parse: error: no prefix parse fn found for ${this.curToken.type}`)
+    this.report(this.curToken, `invalid expression for '${this.curToken.literal}'`)
   }
 
   private peekPrecedence(): Precedence {
@@ -441,5 +440,9 @@ export class Parser {
 
   private curPrecedence(): Precedence {
     return precedences.get(this.curToken.type) ?? Precedence.LOWEST
+  }
+
+  private report(t: Token, message: string) {
+    this.errors.push(`[line ${t.line}] error: ${message}`)
   }
 }
