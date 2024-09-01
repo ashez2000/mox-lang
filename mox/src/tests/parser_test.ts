@@ -3,8 +3,10 @@ import { strict as assert } from 'node:assert'
 
 import { Parser } from '../parser.js'
 import { Lexer } from '../lexer.js'
-import { Bool, CallExpr, Expr, ExprStmt, FnExpr, Ident, IfExpr, Infix, Int, Let, Prefix, Return, Stmt } from '../ast.js'
 import { TokenType } from '../token.js'
+
+import * as Expr from '../ast/expr.js'
+import * as Stmt from '../ast/stmt.js'
 
 test('test parseLetStatement', () => {
   const input = `
@@ -17,8 +19,8 @@ test('test parseLetStatement', () => {
   const statements = testProgram(input, expectedStatements)
 
   for (let i = 0; i < 3; i++) {
-    const stmt = statements[i]
-    assert(stmt instanceof Let)
+    const s = statements[i]
+    assert(s instanceof Stmt.Let)
   }
 })
 
@@ -34,7 +36,7 @@ test('test parseReturnStatement', () => {
 
   for (let i = 0; i < 3; i++) {
     const stmt = statements[i]
-    assert(stmt instanceof Return)
+    assert(stmt instanceof Stmt.Return)
   }
 })
 
@@ -44,10 +46,10 @@ test('test parseIdentifier', () => {
   const statements = testProgram(input, expectedStatements)
 
   const stmt = statements[0]
-  assert(stmt instanceof ExprStmt)
+  assert(stmt instanceof Stmt.Expr)
 
-  const ident = stmt.value
-  assert(ident instanceof Ident)
+  const ident = stmt.expr
+  assert(ident instanceof Expr.Ident)
   assert.equal(ident.name, 'foobar')
 })
 
@@ -57,9 +59,9 @@ test('test parseInteger', () => {
   const statements = testProgram(input, expectedStatements)
 
   const stmt = statements[0]
-  assert(stmt instanceof ExprStmt)
+  assert(stmt instanceof Stmt.Expr)
 
-  testIntegerExpr(stmt.value, 5)
+  testIntegerExpr(stmt.expr, 5)
 })
 
 test('test parseBool', () => {
@@ -74,10 +76,10 @@ test('test parseBool', () => {
     const statements = testProgram(t.input, expectedStatements)
 
     const stmt = statements[0]
-    assert(stmt instanceof ExprStmt)
+    assert(stmt instanceof Stmt.Expr)
 
-    const bool = stmt.value
-    assert(bool instanceof Bool)
+    const bool = stmt.expr
+    assert(bool instanceof Expr.Bool)
     assert.equal(bool.value, t.value)
   }
 })
@@ -94,10 +96,10 @@ test('test parsePrefixExpreesion', () => {
     const statements = testProgram(t.input, expectedStatements)
 
     const stmt = statements[0]
-    assert(stmt instanceof ExprStmt)
+    assert(stmt instanceof Stmt.Expr)
 
-    const prefix = stmt.value
-    assert(prefix instanceof Prefix)
+    const prefix = stmt.expr
+    assert(prefix instanceof Expr.Prefix)
     assert.equal(prefix.operator, t.operator)
     testIntegerExpr(prefix.right, t.value)
   }
@@ -121,8 +123,8 @@ test('test parseInfixExpression', () => {
     const statements = testProgram(t.input, expectedStatements)
 
     const stmt = statements[0]
-    assert(stmt instanceof ExprStmt)
-    testInfixExpr(stmt.value, t.left, t.operator, t.right)
+    assert(stmt instanceof Stmt.Expr)
+    testInfixExpr(stmt.expr, t.left, t.operator, t.right)
   }
 })
 
@@ -132,10 +134,10 @@ test('test parseIfExpression', () => {
   const statements = testProgram(input, expectedStatements)
 
   const stmt = statements[0]
-  assert(stmt instanceof ExprStmt)
+  assert(stmt instanceof Stmt.Expr)
 
-  const ifExpr = stmt.value
-  assert(ifExpr instanceof IfExpr)
+  const ifExpr = stmt.expr
+  assert(ifExpr instanceof Expr.If)
 })
 
 test('test parseFnExpr', () => {
@@ -143,10 +145,10 @@ test('test parseFnExpr', () => {
 
   const statements = testProgram(input, 1)
   const stmt = statements[0]
-  assert(stmt instanceof ExprStmt)
+  assert(stmt instanceof Stmt.Expr)
 
-  const fnExpr = stmt.value
-  assert(fnExpr instanceof FnExpr)
+  const fnExpr = stmt.expr
+  assert(fnExpr instanceof Expr.Func)
 
   assert.equal(fnExpr.parameters.length, 2)
   testLiteralExpr(fnExpr.parameters[0], 'x')
@@ -155,20 +157,20 @@ test('test parseFnExpr', () => {
   const body = fnExpr.body
   assert.equal(body.statements.length, 1)
   const bodyStmt = body.statements[0]
-  assert(bodyStmt instanceof ExprStmt)
-  testInfixExpr(bodyStmt.value, 'x', '+', 'y')
+  assert(bodyStmt instanceof Stmt.Expr)
+  testInfixExpr(bodyStmt.expr, 'x', '+', 'y')
 })
 
 test('test parseCallExpr', () => {
   const input = 'add(1, 2 * 3, 4 + 5)'
   const statements = testProgram(input, 1)
   const stmt = statements[0]
-  assert(stmt instanceof ExprStmt)
+  assert(stmt instanceof Stmt.Expr)
 
-  const callExpr = stmt.value
-  assert(callExpr instanceof CallExpr)
-  assert(callExpr.fnExpr instanceof Ident)
-  assert(callExpr.fnExpr.name, 'add')
+  const callExpr = stmt.expr
+  assert(callExpr instanceof Expr.Call)
+  assert(callExpr.func instanceof Expr.Ident)
+  assert(callExpr.func.name, 'add')
   assert.equal(callExpr.args.length, 3)
   testLiteralExpr(callExpr.args[0], 1)
   testInfixExpr(callExpr.args[1], 2, '*', 3)
@@ -179,10 +181,10 @@ test('test parseCallExpr', () => {
 // Test Util
 //
 
-function testProgram(input: string, expectedStatements: number): Stmt[] {
+function testProgram(input: string, expectedStatements: number): Stmt.Stmt[] {
   const lexer = Lexer.new(input)
   const parser = Parser.new(lexer)
-  const statements = parser.parse()
+  const program = parser.parse()
 
   // check for parser errors
   if (parser.errors.length != 0) {
@@ -193,26 +195,26 @@ function testProgram(input: string, expectedStatements: number): Stmt[] {
   }
 
   assert.equal(
-    statements.length,
+    program.statements.length,
     expectedStatements,
-    `Expected ${expectedStatements} statements, got=${statements.length}`
+    `Expected ${expectedStatements} statements, got=${program.statements.length}`
   )
 
-  return statements
+  return program.statements
 }
 
-function testIntegerExpr(expr: Expr, value: number) {
-  assert(expr instanceof Int)
+function testIntegerExpr(expr: Expr.Expr, value: number) {
+  assert(expr instanceof Expr.Int)
   assert.equal(expr.value, value)
 }
 
-function testIdent(expr: Expr, name: string) {
-  assert(expr instanceof Ident)
+function testIdent(expr: Expr.Expr, name: string) {
+  assert(expr instanceof Expr.Ident)
   assert(expr.token.type == TokenType.IDENT)
   assert(expr.name == name)
 }
 
-function testLiteralExpr(expr: Expr, expected: any) {
+function testLiteralExpr(expr: Expr.Expr, expected: any) {
   if (typeof expected == 'number') {
     testIntegerExpr(expr, expected)
     return
@@ -226,8 +228,8 @@ function testLiteralExpr(expr: Expr, expected: any) {
   assert.fail('unknown expected value type')
 }
 
-function testInfixExpr(expr: Expr, left: any, op: string, right: any) {
-  assert(expr instanceof Infix)
+function testInfixExpr(expr: Expr.Expr, left: any, op: string, right: any) {
+  assert(expr instanceof Expr.Infix)
   testLiteralExpr(expr.left, left)
   assert(op == expr.operator)
   testLiteralExpr(expr.right, right)

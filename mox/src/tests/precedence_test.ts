@@ -3,7 +3,8 @@ import { strict as assert } from 'node:assert'
 
 import { Lexer } from '../lexer'
 import { Parser } from '../parser'
-import astPrinter from '../ast-printer'
+import printer from '../ast/printer'
+import { Expr } from '../ast/stmt'
 
 test('test operator precedece parsing', () => {
   // tests :: [[input, expected]]
@@ -43,7 +44,7 @@ test('test operator precedece parsing', () => {
     const lexer = Lexer.new(input)
     const parser = Parser.new(lexer)
 
-    const stmts = parser.parse()
+    const program = parser.parse()
     if (parser.errors.length != 0) {
       for (const e of parser.errors) {
         console.log(e)
@@ -51,7 +52,7 @@ test('test operator precedece parsing', () => {
       assert.fail('parser has errors')
     }
 
-    assert(stmts.length == 1, `tests[${i}]`)
-    assert(astPrinter.print(stmts[0]) == expected, `tests[${i}]`)
+    assert(program.statements.length == 1, `tests[${i}]`)
+    assert.equal(printer.printStmt(program.statements[0]), expected, `tests[${i}]`)
   }
 })
