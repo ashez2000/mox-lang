@@ -28,6 +28,7 @@ function main(args: string[]) {
     'Func     - token: Token, parameters: Ident[], body: stmt.Block',
     'Call     - token: Token, func: Expr, args: Expr[]',
     'Array    - token: Token, elements: Expr[]',
+    'Index    - token: Token, left: Expr, index: Expr',
   ])
 }
 

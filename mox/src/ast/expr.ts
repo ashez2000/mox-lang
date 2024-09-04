@@ -16,6 +16,7 @@ export interface Visitor<T> {
   visitFuncExpr(expr: Func): T
   visitCallExpr(expr: Call): T
   visitArrayExpr(expr: Array): T
+  visitIndexExpr(expr: Index): T
 }
 
 export class Ident extends Expr {
@@ -160,5 +161,19 @@ export class Array extends Expr {
 
   accept<T>(visitor: Visitor<T>): T {
     return visitor.visitArrayExpr(this)
+  }
+}
+
+export class Index extends Expr {
+  constructor(public token: Token, public left: Expr, public index: Expr) {
+    super()
+  }
+
+  static new(token: Token, left: Expr, index: Expr): Index {
+    return new Index(token, left, index)
+  }
+
+  accept<T>(visitor: Visitor<T>): T {
+    return visitor.visitIndexExpr(this)
   }
 }

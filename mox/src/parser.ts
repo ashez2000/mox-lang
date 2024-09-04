@@ -50,6 +50,7 @@ export class Parser {
       [TokenType.LT, this.parseInfix.bind(this)],
       [TokenType.GT, this.parseInfix.bind(this)],
       [TokenType.LPAREN, this.parseCallExpr.bind(this)],
+      [TokenType.LBRACKET, this.parseIndexExpression.bind(this)],
     ])
   }
 
@@ -410,6 +411,22 @@ export class Parser {
     }
 
     return expressions
+  }
+
+  private parseIndexExpression(left: Expr): expr.Index | null {
+    const token = this.curToken
+
+    this.nextToken()
+    const index = this.parseExpression(Precedence.LOWEST)
+    if (!index) {
+      return null
+    }
+
+    if (!this.expectPeek(TokenType.RBRACKET, "expected ']' after index expression")) {
+      return null
+    }
+
+    return expr.Index.new(token, left, index)
   }
 
   //

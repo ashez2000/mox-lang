@@ -8,6 +8,7 @@ export enum Precedence {
   PRODUCT,
   PREFIX,
   CALL,
+  INDEX,
 }
 
 export const precedences = new Map<TokenType, Precedence>([
@@ -20,4 +21,5 @@ export const precedences = new Map<TokenType, Precedence>([
   [TokenType.SLASH, Precedence.PRODUCT],
   [TokenType.ASTERISK, Precedence.PRODUCT],
   [TokenType.LPAREN, Precedence.CALL],
+  [TokenType.LBRACKET, Precedence.INDEX],
 ])

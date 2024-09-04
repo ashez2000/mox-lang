@@ -193,6 +193,19 @@ test('parse: test parseArrayLiteral', () => {
   testInfixExpr(elements[2], 3, '+', 3)
 })
 
+test('parse: test parseIndexExpression', () => {
+  const input = 'myArray[1 + 1]'
+  const statements = testProgram(input, 1)
+
+  const stmt = statements[0]
+  assert(stmt instanceof Stmt.Expr)
+  assert(stmt.expr instanceof Expr.Index)
+
+  const indexExpr = stmt.expr
+  testIdent(indexExpr.left, 'myArray')
+  testInfixExpr(indexExpr.index, 1, '+', 1)
+})
+
 //
 // Test Util
 //
