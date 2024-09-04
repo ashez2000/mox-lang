@@ -7,6 +7,7 @@ export enum ObjectType {
   BOOL = 'BOOL',
   STRING = 'STRING',
   ARRAY = 'ARRAY',
+  HASHMAP = 'HASHMAP',
   NULL = 'NULL',
   RETURN = 'RETURN',
   FUNC = 'FUNC',
@@ -83,6 +84,15 @@ export class Func implements MoxObject {
 
   toString(): string {
     return `function`
+  }
+}
+
+export class HashMap implements MoxObject {
+  type: ObjectType = ObjectType.HASHMAP
+  constructor(public values: Map<string, MoxObject>) {}
+
+  toString(): string {
+    return 'hashmap'
   }
 }
 

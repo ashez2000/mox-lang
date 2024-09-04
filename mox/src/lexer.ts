@@ -46,6 +46,9 @@ export class Lexer {
       case ';':
         tok = Token.new(TokenType.SEMICOLON, this.ch, this.line)
         break
+      case ':':
+        tok = Token.new(TokenType.COLON, this.ch, this.line)
+        break
       case '(':
         tok = Token.new(TokenType.LPAREN, this.ch, this.line)
         break

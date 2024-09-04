@@ -214,6 +214,28 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
 
     return evalIndexExpression(left, index)
   }
+
+  visitHashMapExpr(expr: expr.HashMap): object.MoxObject {
+    const keys = expr.keys
+    const values = expr.values
+    const hashmap = new Map<string, MoxObject>()
+
+    for (let i = 0; i < keys.length; i++) {
+      const key = this.evaluate(keys[i])
+      if (isError(key)) {
+        return key
+      }
+
+      const value = this.evaluate(values[i])
+      if (isError(value)) {
+        return value
+      }
+
+      hashmap.set(key.toString(), value)
+    }
+
+    return new object.HashMap(hashmap)
+  }
 }
 
 //
@@ -301,9 +323,13 @@ function evalIntInfixExpression(operator: string, left: object.Int, right: objec
   }
 }
 
-function evalIndexExpression(left: MoxObject, index: MoxObject) {
+function evalIndexExpression(left: MoxObject, index: MoxObject): MoxObject {
   if (left instanceof object.Array && index instanceof object.Int) {
     return evalArrayIndexExpression(left, index)
+  }
+
+  if (left instanceof object.HashMap) {
+    return evalHashMapIndexExpression(left, index)
   }
 
   return error('index operator not supported for ' + left.type)
@@ -315,6 +341,10 @@ function evalArrayIndexExpression(array: object.Array, index: object.Int) {
   }
 
   return array.elements[index.value]
+}
+
+function evalHashMapIndexExpression(hashmap: object.HashMap, index: MoxObject) {
+  return hashmap.values.get(index.toString()) ?? NULL
 }
 
 function error(message: string) {

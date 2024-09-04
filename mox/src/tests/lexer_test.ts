@@ -24,6 +24,8 @@ test('lexer: test nextToken', () => {
     "foo bar";
 
     [1, 2];
+
+    {"foo" : "bar"};
   `
 
   const tests = [
@@ -133,6 +135,14 @@ test('lexer: test nextToken', () => {
     /* 80 */ Token.new(TokenType.INT, '2'),
     /* 81 */ Token.new(TokenType.RBRACKET, ']'),
     /* 82 */ Token.new(TokenType.SEMICOLON, ';'),
+
+    // {"foo": "bar"};
+    /* 83 */ Token.new(TokenType.LBRACE, '{'),
+    /* 84 */ Token.new(TokenType.STRING, 'foo'),
+    /* 85 */ Token.new(TokenType.COLON, ':'),
+    /* 86 */ Token.new(TokenType.STRING, 'bar'),
+    /* 87 */ Token.new(TokenType.RBRACE, '}'),
+    /* 88 */ Token.new(TokenType.SEMICOLON, ';'),
   ]
 
   const lexer = Lexer.new(input)

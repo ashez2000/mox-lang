@@ -17,6 +17,7 @@ export interface Visitor<T> {
   visitCallExpr(expr: Call): T
   visitArrayExpr(expr: Array): T
   visitIndexExpr(expr: Index): T
+  visitHashMapExpr(expr: HashMap): T
 }
 
 export class Ident extends Expr {
@@ -175,5 +176,19 @@ export class Index extends Expr {
 
   accept<T>(visitor: Visitor<T>): T {
     return visitor.visitIndexExpr(this)
+  }
+}
+
+export class HashMap extends Expr {
+  constructor(public token: Token, public keys: Expr[], public values: Expr[]) {
+    super()
+  }
+
+  static new(token: Token, keys: Expr[], values: Expr[]): HashMap {
+    return new HashMap(token, keys, values)
+  }
+
+  accept<T>(visitor: Visitor<T>): T {
+    return visitor.visitHashMapExpr(this)
   }
 }

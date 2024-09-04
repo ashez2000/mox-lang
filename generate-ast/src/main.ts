@@ -29,6 +29,7 @@ function main(args: string[]) {
     'Call     - token: Token, func: Expr, args: Expr[]',
     'Array    - token: Token, elements: Expr[]',
     'Index    - token: Token, left: Expr, index: Expr',
+    'HashMap  - token: Token, keys: Expr[], values: Expr[]',
   ])
 }
 

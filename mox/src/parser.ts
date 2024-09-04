@@ -38,6 +38,7 @@ export class Parser {
       [TokenType.IF, this.parseIfExpr.bind(this)],
       [TokenType.FUNCTION, this.parseFnExpr.bind(this)],
       [TokenType.LBRACKET, this.parseArrayLiteral.bind(this)],
+      [TokenType.LBRACE, this.parseHashMapLiteral.bind(this)],
     ])
 
     this.infixParseFns = new Map([
@@ -427,6 +428,48 @@ export class Parser {
     }
 
     return expr.Index.new(token, left, index)
+  }
+
+  private parseHashMapLiteral(): expr.HashMap | null {
+    const token = this.curToken
+    const keys: Expr[] = []
+    const values: Expr[] = []
+
+    while (!this.peekTokenIs(TokenType.RBRACE)) {
+      this.nextToken()
+
+      const key = this.parseExpression(Precedence.LOWEST)
+      if (!key) {
+        return null
+      }
+
+      if (!this.expectPeek(TokenType.COLON, "expected ':' after hashmap key")) {
+        return null
+      }
+
+      this.nextToken()
+
+      const value = this.parseExpression(Precedence.LOWEST)
+      if (!value) {
+        return null
+      }
+
+      if (
+        !this.peekTokenIs(TokenType.RBRACE) &&
+        !this.expectPeek(TokenType.COMMA, "expected ',' after value in hashmap")
+      ) {
+        return null
+      }
+
+      keys.push(key)
+      values.push(value)
+    }
+
+    if (!this.expectPeek(TokenType.RBRACE, "expected '}' for hashmap literal")) {
+      return null
+    }
+
+    return expr.HashMap.new(token, keys, values)
   }
 
   //
