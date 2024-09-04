@@ -4,7 +4,7 @@ import { strict as assert } from 'node:assert'
 import { Lexer } from '../lexer.js'
 import { Token, TokenType } from '../token.js'
 
-test('test nextToken', () => {
+test('lexer: test nextToken', () => {
   const input = `\
     let five = 5;
     let ten = 10;
@@ -22,6 +22,8 @@ test('test nextToken', () => {
 
     "foobar";
     "foo bar";
+
+    [1, 2];
   `
 
   const tests = [
@@ -123,6 +125,14 @@ test('test nextToken', () => {
     /* 74 */ Token.new(TokenType.SEMICOLON, ';'),
     /* 75 */ Token.new(TokenType.STRING, 'foo bar'),
     /* 76 */ Token.new(TokenType.SEMICOLON, ';'),
+
+    // [1, 2];
+    /* 77 */ Token.new(TokenType.LBRACKET, '['),
+    /* 78 */ Token.new(TokenType.INT, '1'),
+    /* 79 */ Token.new(TokenType.COMMA, ','),
+    /* 80 */ Token.new(TokenType.INT, '2'),
+    /* 81 */ Token.new(TokenType.RBRACKET, ']'),
+    /* 82 */ Token.new(TokenType.SEMICOLON, ';'),
   ]
 
   const lexer = Lexer.new(input)
@@ -132,7 +142,6 @@ test('test nextToken', () => {
     const t = tests[i]
 
     assert.equal(tok.type, t.type, `tests[${i}] expected=${t.type}, got=${tok.type}`)
-
     assert.equal(tok.literal, t.literal, `tests[${i}] expected=${t.literal}, got=${tok.literal}`)
   }
 })

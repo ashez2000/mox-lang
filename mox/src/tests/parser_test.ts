@@ -177,6 +177,22 @@ test('test parseCallExpr', () => {
   testInfixExpr(callExpr.args[2], 4, '+', 5)
 })
 
+test('parse: test parseArrayLiteral', () => {
+  const input = '[1, 2 * 2, 3 + 3]'
+  const statements = testProgram(input, 1)
+
+  const stmt = statements[0]
+  assert(stmt instanceof Stmt.Expr)
+
+  assert(stmt.expr instanceof Expr.Array)
+
+  const elements = stmt.expr.elements
+  assert.equal(elements.length, 3)
+  testIntegerExpr(elements[0], 1)
+  testInfixExpr(elements[1], 2, '*', 2)
+  testInfixExpr(elements[2], 3, '+', 3)
+})
+
 //
 // Test Util
 //

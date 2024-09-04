@@ -27,6 +27,7 @@ function main(args: string[]) {
     'If       - token: Token, condidtion: Expr, consequence: stmt.Block, alternative: stmt.Block | null = null',
     'Func     - token: Token, parameters: Ident[], body: stmt.Block',
     'Call     - token: Token, func: Expr, args: Expr[]',
+    'Array    - token: Token, elements: Expr[]',
   ])
 }
 

@@ -58,6 +58,12 @@ export class Lexer {
       case '}':
         tok = Token.new(TokenType.RBRACE, this.ch, this.line)
         break
+      case '[':
+        tok = Token.new(TokenType.LBRACKET, this.ch, this.line)
+        break
+      case ']':
+        tok = Token.new(TokenType.RBRACKET, this.ch, this.line)
+        break
       case ',':
         tok = Token.new(TokenType.COMMA, this.ch, this.line)
         break

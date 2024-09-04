@@ -15,6 +15,7 @@ export interface Visitor<T> {
   visitIfExpr(expr: If): T
   visitFuncExpr(expr: Func): T
   visitCallExpr(expr: Call): T
+  visitArrayExpr(expr: Array): T
 }
 
 export class Ident extends Expr {
@@ -145,5 +146,19 @@ export class Call extends Expr {
 
   accept<T>(visitor: Visitor<T>): T {
     return visitor.visitCallExpr(this)
+  }
+}
+
+export class Array extends Expr {
+  constructor(public token: Token, public elements: Expr[]) {
+    super()
+  }
+
+  static new(token: Token, elements: Expr[]): Array {
+    return new Array(token, elements)
+  }
+
+  accept<T>(visitor: Visitor<T>): T {
+    return visitor.visitArrayExpr(this)
   }
 }

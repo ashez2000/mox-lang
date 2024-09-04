@@ -37,6 +37,7 @@ export class Parser {
       [TokenType.LPAREN, this.parseGroupedExpr.bind(this)],
       [TokenType.IF, this.parseIfExpr.bind(this)],
       [TokenType.FUNCTION, this.parseFnExpr.bind(this)],
+      [TokenType.LBRACKET, this.parseArrayLiteral.bind(this)],
     ])
 
     this.infixParseFns = new Map([
@@ -354,11 +355,10 @@ export class Parser {
     return idents
   }
 
-  // <fn_lit> | <ident> (<args>)
   private parseCallExpr(fnExpr: Expr): Expr | null {
     const tok = this.curToken
 
-    const args = this.parseCallArgs()
+    const args = this.parseExpressionList(TokenType.RPAREN)
     if (!args) {
       return null
     }
@@ -366,13 +366,23 @@ export class Parser {
     return expr.Call.new(tok, fnExpr, args)
   }
 
-  // ( <args> )
-  private parseCallArgs(): Expr[] | null {
-    const args: Expr[] = []
+  private parseArrayLiteral(): expr.Array | null {
+    const token = this.curToken
 
-    if (this.peekTokenIs(TokenType.RPAREN)) {
+    const elements = this.parseExpressionList(TokenType.RBRACKET)
+    if (!elements) {
+      return null
+    }
+
+    return expr.Array.new(token, elements)
+  }
+
+  private parseExpressionList(end: TokenType): Expr[] | null {
+    const expressions: Expr[] = []
+
+    if (this.peekTokenIs(end)) {
       this.nextToken()
-      return args
+      return expressions
     }
 
     this.nextToken()
@@ -382,7 +392,7 @@ export class Parser {
       return null
     }
 
-    args.push(expr)
+    expressions.push(expr)
 
     while (this.peekTokenIs(TokenType.COMMA)) {
       this.nextToken()
@@ -392,14 +402,14 @@ export class Parser {
         return null
       }
 
-      args.push(expr)
+      expressions.push(expr)
     }
 
-    if (!this.expectPeek(TokenType.RPAREN, "expected ')' for the call expression")) {
+    if (!this.expectPeek(end, `expected '${end}' after list of expressions`)) {
       return null
     }
 
-    return args
+    return expressions
   }
 
   //

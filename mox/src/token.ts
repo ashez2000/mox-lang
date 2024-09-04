@@ -20,6 +20,8 @@ export enum TokenType {
   RPAREN = 'RPAREN',
   LBRACE = 'LBRACE',
   RBRACE = 'RBRACE',
+  LBRACKET ='LBRACKET',
+  RBRACKET ='RBRACKET',
   FUNCTION = 'FUNCTION',
   LET = 'LET',
   TRUE = 'TRUE',
