@@ -43,11 +43,11 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
     for (const s of stmt.statements) {
       value = this.execute(s)
 
-      if (value instanceof object.Return) {
+      if (isReturn(value)) {
         return value.value // unwrap return value
       }
 
-      if (value instanceof object.Error) {
+      if (isError(value)) {
         return value
       }
     }
@@ -195,6 +195,25 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
     }
     return env
   }
+
+  visitArrayExpr(expr: expr.Array): object.MoxObject {
+    const elements = this.evalExpressions(expr.elements)
+    return new object.Array(elements)
+  }
+
+  visitIndexExpr(expr: expr.Index): object.MoxObject {
+    const left = this.evaluate(expr.left)
+    if (isError(left)) {
+      return left
+    }
+
+    const index = this.evaluate(expr.index)
+    if (isError(index)) {
+      return index
+    }
+
+    return evalIndexExpression(left, index)
+  }
 }
 
 //
@@ -282,6 +301,30 @@ function evalIntInfixExpression(operator: string, left: object.Int, right: objec
   }
 }
 
+function evalIndexExpression(left: MoxObject, index: MoxObject) {
+  if (left instanceof object.Array && index instanceof object.Int) {
+    return evalArrayIndexExpression(left, index)
+  }
+
+  return error('index operator not supported for ' + left.type)
+}
+
+function evalArrayIndexExpression(array: object.Array, index: object.Int) {
+  if (index.value < 0 || index.value >= array.elements.length) {
+    return NULL
+  }
+
+  return array.elements[index.value]
+}
+
 function error(message: string) {
   return new object.Error(message)
+}
+
+function isError(o: MoxObject) {
+  return o instanceof object.Error
+}
+
+function isReturn(o: MoxObject) {
+  return o instanceof object.Return
 }

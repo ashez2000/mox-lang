@@ -138,7 +138,25 @@ test('interpreter: test function call evaluation', () => {
 
   for (const t of tests) {
     const value = testEval(t[0])
-    console.log(value)
+    testIntObject(value, t[1])
+  }
+})
+
+test('interpreter: test array literal evaluation', () => {
+  const input = '[1, 2 * 2, 3 + 3]'
+  const evaluated = testEval(input)
+  assert(evaluated instanceof object.Array)
+  const elements = evaluated.elements
+  testIntObject(elements[0], 1)
+  testIntObject(elements[1], 4)
+  testIntObject(elements[2], 6)
+})
+
+test('interpreter: test function call evaluation', () => {
+  const tests: [string, number][] = [['[1, 2, 3][0]', 1]]
+
+  for (const t of tests) {
+    const value = testEval(t[0])
     testIntObject(value, t[1])
   }
 })

@@ -6,6 +6,7 @@ export enum ObjectType {
   INT = 'INT',
   BOOL = 'BOOL',
   STRING = 'STRING',
+  ARRAY = 'ARRAY',
   NULL = 'NULL',
   RETURN = 'RETURN',
   FUNC = 'FUNC',
@@ -52,6 +53,16 @@ export class String implements MoxObject {
 
   toString(): string {
     return this.value
+  }
+}
+
+export class Array implements MoxObject {
+  type: ObjectType = ObjectType.ARRAY
+
+  constructor(public elements: MoxObject[]) {}
+
+  toString(): string {
+    return `[ ${this.elements.map((o) => o.toString()).toString()} ]`
   }
 }
 

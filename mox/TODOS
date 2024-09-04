@@ -1,2 +1,3 @@
 - Complete ast printer
 - Add line number on runtime errors
+  - refactor error handling in interpreter
