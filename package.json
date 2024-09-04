@@ -2,8 +2,8 @@
   "name": "mox-lang",
   "version": "0.1.0",
   "scripts": {
-    "start": "npm start --prefix mox",
+    "start": "pnpm --filter mox start",
     "build": "pnpm run -r build",
-    "generate": "npm run generate --prefix generate-ast -- ../mox/src/ast"
+    "generate": "pnpm --filter generate-ast generate ../mox/src/ast"
   }
 }
