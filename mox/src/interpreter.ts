@@ -11,13 +11,11 @@ const TRUE = new object.Bool(true)
 const FALSE = new object.Bool(false)
 
 export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObject> {
+  stdout: string[]
   private environment = new Environment()
-  private out: (value: string) => void = () => {}
 
-  constructor(out?: (value: string) => void) {
-    if (out) {
-      this.out = out
-    }
+  constructor() {
+    this.stdout = []
   }
 
   interpret(program: stmt.Program) {
@@ -68,7 +66,7 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
 
   visitPrintStmt(stmt: stmt.Print): object.MoxObject {
     const value = this.evaluate(stmt.expr)
-    this.out(value.toString())
+    this.stdout.push(value.toString())
     return value
   }
 

@@ -1,7 +1,6 @@
 import { Lexer, Parser, Interpreter } from 'mox'
 
 export default function run(input: string) {
-  const output: string[] = []
   const errors: string[] = []
 
   const lexer = Lexer.new(input)
@@ -11,8 +10,8 @@ export default function run(input: string) {
     errors.push(e)
   }
 
-  const interpreter = new Interpreter((value) => output.push(value))
+  const interpreter = new Interpreter()
   interpreter.interpret(program)
 
-  return { output, errors }
+  return { output: interpreter.stdout, errors }
 }
