@@ -1,6 +1,7 @@
 {
   "name": "mox",
   "version": "1.0.0",
+  "type": "module",
   "main": "./dist/lib.mjs",
   "scripts": {
     "start": "tsx ./src/main.ts",
