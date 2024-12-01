@@ -9,36 +9,34 @@ function main(args: string[]) {
   const outputDir = args[0]
 
   defineAst(outputDir, 'Stmt', [
-    'Program  - statements: Stmt[]',
-    'Let      - token: Token, name: expr.Ident, expr: expr.Expr',
-    'Return   - token: Token, expr: expr.Expr',
-    'Print    - token: Token, expr: expr.Expr',
-    'Expr     - token: Token, expr: expr.Expr',
-    'Block    - token: Token, statements: Stmt[]',
+    'Let        - name: expr.Ident, value: expr.Expr',
+    'Return     - keyword: Token, value?: expr.Expr',
+    'Print      - expr: expr.Expr',
+    'Expression - expr: expr.Expr',
+    'Block      - statements: Stmt[]',
   ])
 
   defineAst(outputDir, 'Expr', [
-    'Ident    - token: Token, name: string',
-    'Bool     - token: Token, value: boolean',
-    'Int      - token: Token, value: number',
-    'String   - token: Token, value: string',
-    'Prefix   - token: Token, operator: string, right: Expr',
-    'Infix    - token: Token, operator: string, left: Expr, right: Expr',
-    'If       - token: Token, condidtion: Expr, consequence: stmt.Block, alternative: stmt.Block | null = null',
-    'Func     - token: Token, parameters: Ident[], body: stmt.Block',
-    'Call     - token: Token, func: Expr, args: Expr[]',
-    'Array    - token: Token, elements: Expr[]',
-    'Index    - token: Token, left: Expr, index: Expr',
-    'HashMap  - token: Token, keys: Expr[], values: Expr[]',
+    'Ident    - name: Token',
+    'Bool     - value: boolean',
+    'Int      - value: number',
+    'String   - value: string',
+    'Prefix   - operator: Token, right: Expr',
+    'Infix    - operator: Token, left: Expr, right: Expr',
+    'If       - condidtion: Expr, thenBlock: stmt.Block, elseBlock?: stmt.Block',
+    'Fn       - name: Token, parameters: Ident[], body: stmt.Block',
+    'Call     - fnExpr: Expr, args: Expr[]',
+    'Array    - elements: Expr[]',
+    'Index    - left: Expr, index: Expr',
+    'HashMap  - keys: Expr[], values: Expr[]',
   ])
 }
 
 function defineAst(outputDir: string, baseName: string, types: string[]) {
   const path = `${outputDir}/${baseName.toLowerCase()}.ts`
 
-  // TODO: Refactor to file writer
   let code = ''
-  code += "import { Token } from '../token.js'\n"
+  code += "import { Token } from './token.js'\n"
 
   if (baseName === 'Stmt') {
     code += "import * as expr from './expr.js'\n"
@@ -77,14 +75,6 @@ function defineType(baseName: string, className: string, fieldList: string) {
     .join(',')
 
   code += ') { super() }\n\n'
-
-  const args = fieldList
-    .split(',')
-    .map((f) => f.split(':')[0])
-    .join(',')
-
-  code += `static new (${fieldList}): ${className} { return new ${className}(${args})  }\n\n`
-
   code += `accept<T> (visitor: Visitor<T>): T {\n`
   code += `return visitor.visit${className}${baseName}(this) } }\n`
 

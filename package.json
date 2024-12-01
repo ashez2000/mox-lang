@@ -4,6 +4,6 @@
   "scripts": {
     "start": "pnpm --filter mox start",
     "build": "pnpm run -r build",
-    "generate": "pnpm --filter generate-ast generate ../mox/src/ast"
+    "generate": "pnpm --filter generate-ast generate ../mox/src"
   }
 }
