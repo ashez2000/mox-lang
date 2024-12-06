@@ -1,9 +1,9 @@
-import * as expr from './ast/expr'
-import * as stmt from './ast/stmt'
+import * as stmt from './stmt.js'
+import * as expr from './expr.js'
 
-import { Lexer } from './lexer'
-import { Token, TokenType } from './token'
-import { Precedence, precedences } from './precedence'
+import { TokenIter } from './lexer.js'
+import { Token, TokenType } from './token.js'
+import { Precedence, precedences } from './precedence.js'
 
 type Stmt = stmt.Stmt
 type Expr = expr.Expr
@@ -12,7 +12,7 @@ type PrefixParseFn = () => Expr | null
 type InfixParseFn = (left: Expr) => Expr | null
 
 export class Parser {
-  private lexer: Lexer
+  private lexer: TokenIter
   private curToken: Token
   private peekToken: Token
   private prefixParseFns: Map<TokenType, PrefixParseFn>
@@ -20,10 +20,10 @@ export class Parser {
 
   public errors: string[]
 
-  private constructor(lexer: Lexer) {
+  private constructor(lexer: TokenIter) {
     this.lexer = lexer
-    this.curToken = Token.new(TokenType.EOF, '\0', 0)
-    this.peekToken = Token.new(TokenType.EOF, '\0', 0)
+    this.curToken = new Token(TokenType.EOF, '\0', 0)
+    this.peekToken = new Token(TokenType.EOF, '\0', 0)
     this.errors = []
 
     this.prefixParseFns = new Map([
@@ -46,24 +46,21 @@ export class Parser {
       [TokenType.MINUS, this.parseInfix.bind(this)],
       [TokenType.SLASH, this.parseInfix.bind(this)],
       [TokenType.ASTERISK, this.parseInfix.bind(this)],
-      [TokenType.EQ, this.parseInfix.bind(this)],
-      [TokenType.NE, this.parseInfix.bind(this)],
+      [TokenType.EQUAL, this.parseInfix.bind(this)],
+      [TokenType.NOT_EQUAL, this.parseInfix.bind(this)],
       [TokenType.LT, this.parseInfix.bind(this)],
       [TokenType.GT, this.parseInfix.bind(this)],
       [TokenType.LPAREN, this.parseCallExpr.bind(this)],
       [TokenType.LBRACKET, this.parseIndexExpression.bind(this)],
     ])
+
+    this.nextToken()
+    this.nextToken()
   }
 
-  static new(lexer: Lexer): Parser {
-    const parser = new Parser(lexer)
-    parser.nextToken()
-    parser.nextToken()
-    return parser
-  }
-
-  parse(): stmt.Program {
-    const statements: stmt.Stmt[] = []
+  /** parse parses the program and returns AST = Stmt[] */
+  parse(): Stmt[] {
+    const statements: Stmt[] = []
 
     while (!this.curTokenIs(TokenType.EOF)) {
       const stmt = this.parseStatement()
@@ -73,7 +70,7 @@ export class Parser {
       this.nextToken()
     }
 
-    return stmt.Program.new(statements)
+    return statements
   }
 
   //
@@ -95,13 +92,11 @@ export class Parser {
 
   // "let" <ident> "=" <expr> ";"?
   private parseLetStatement(): stmt.Let | null {
-    const letToken = this.curToken
-
     if (!this.expectPeek(TokenType.IDENT, "expected 'identifier' after 'let'")) {
       return null
     }
 
-    const ident = this.parseIdent()
+    const name = this.parseIdent()
 
     if (!this.expectPeek(TokenType.ASSIGN, "expected '=' after 'identifier'")) {
       return null
@@ -118,7 +113,7 @@ export class Parser {
       this.nextToken()
     }
 
-    return stmt.Let.new(letToken, ident, value)
+    return new stmt.Let(name, value)
   }
 
   // "return" <expr> ";"?
@@ -135,12 +130,11 @@ export class Parser {
       this.nextToken()
     }
 
-    return stmt.Return.new(returnToken, value)
+    return new stmt.Return(returnToken, value)
   }
 
   // "print" <expr> ";"?
   private parsePrintStatement(): stmt.Print | null {
-    const printTok = this.curToken
     this.nextToken()
     const value = this.parseExpression(Precedence.LOWEST)
     if (!value) {
@@ -151,13 +145,11 @@ export class Parser {
       this.nextToken()
     }
 
-    return stmt.Print.new(printTok, value)
+    return new stmt.Print(value)
   }
 
   // <expr> ";"?
-  private parseExprStmt(): stmt.Expr | null {
-    const tok = this.curToken
-
+  private parseExprStmt(): stmt.Expression | null {
     const value = this.parseExpression(Precedence.LOWEST)
     if (!value) {
       return null
@@ -167,27 +159,19 @@ export class Parser {
       this.nextToken()
     }
 
-    return stmt.Expr.new(tok, value)
+    return new stmt.Expression(value)
   }
 
   // "{" <statements> "}"
   private parseBlock(): stmt.Block {
-    const stmts: Stmt[] = []
-
-    const tok = this.curToken
+    const statements: Stmt[] = []
     this.nextToken()
-
     while (!this.curTokenIs(TokenType.RBRACE) && !this.curTokenIs(TokenType.EOF)) {
       const stmt = this.parseStatement()
-      if (stmt != null) {
-        stmts.push(stmt)
-      }
+      if (stmt != null) statements.push(stmt)
       this.nextToken()
     }
-
-    // TODO: handle EOF
-
-    return stmt.Block.new(tok, stmts)
+    return new stmt.Block(statements)
   }
 
   //
@@ -220,19 +204,19 @@ export class Parser {
   }
 
   private parseIdent(): expr.Ident {
-    return expr.Ident.new(this.curToken, this.curToken.literal)
+    return new expr.Ident(this.curToken)
   }
 
   private parseInteger(): expr.Int {
-    return expr.Int.new(this.curToken, parseInt(this.curToken.literal))
+    return new expr.Int(parseInt(this.curToken.literal))
   }
 
   private parseBool(): expr.Bool {
-    return expr.Bool.new(this.curToken, this.curToken.literal == 'true' ? true : false)
+    return new expr.Bool(this.curToken.literal == 'true' ? true : false)
   }
 
   private parseString(): expr.String {
-    return expr.String.new(this.curToken, this.curToken.literal)
+    return new expr.String(this.curToken.literal)
   }
 
   private parsePrefix(): expr.Prefix | null {
@@ -244,7 +228,7 @@ export class Parser {
       return null
     }
 
-    return expr.Prefix.new(opToken, opToken.literal, right!)
+    return new expr.Prefix(opToken, right)
   }
 
   private parseGroupedExpr(): Expr | null {
@@ -268,7 +252,7 @@ export class Parser {
       return null
     }
 
-    return expr.Infix.new(opToken, opToken.literal, left, right)
+    return new expr.Infix(opToken, left, right)
   }
 
   // "if" "(" <condition> ")" "{" <consequence> "}" ( else  "{" <alternative> "}" )?
@@ -296,7 +280,7 @@ export class Parser {
 
     const consequence = this.parseBlock()
 
-    let alternative: stmt.Block | null = null
+    let alternative: stmt.Block | undefined
     if (this.peekTokenIs(TokenType.ELSE)) {
       this.nextToken()
       if (!this.expectPeek(TokenType.LBRACE, "expected '{' after 'else'")) {
@@ -305,11 +289,11 @@ export class Parser {
       alternative = this.parseBlock()
     }
 
-    return expr.If.new(token, condition, consequence, alternative)
+    return new expr.If(condition, consequence, alternative)
   }
 
   // fn ( <params> ) { <block> }
-  private parseFnExpr(): expr.Func | null {
+  private parseFnExpr(): expr.Fn | null {
     const fnToken = this.curToken
 
     if (!this.expectPeek(TokenType.LPAREN, "expected '(' after 'fn'")) {
@@ -327,7 +311,7 @@ export class Parser {
 
     const body = this.parseBlock()
 
-    return expr.Func.new(fnToken, params, body)
+    return new expr.Fn(fnToken, params, body)
   }
 
   // ( <params> )
@@ -365,7 +349,7 @@ export class Parser {
       return null
     }
 
-    return expr.Call.new(tok, fnExpr, args)
+    return new expr.Call(fnExpr, args)
   }
 
   private parseArrayLiteral(): expr.Array | null {
@@ -376,7 +360,7 @@ export class Parser {
       return null
     }
 
-    return expr.Array.new(token, elements)
+    return new expr.Array(elements)
   }
 
   private parseExpressionList(end: TokenType): Expr[] | null {
@@ -415,8 +399,6 @@ export class Parser {
   }
 
   private parseIndexExpression(left: Expr): expr.Index | null {
-    const token = this.curToken
-
     this.nextToken()
     const index = this.parseExpression(Precedence.LOWEST)
     if (!index) {
@@ -427,11 +409,10 @@ export class Parser {
       return null
     }
 
-    return expr.Index.new(token, left, index)
+    return new expr.Index(left, index)
   }
 
   private parseHashMapLiteral(): expr.HashMap | null {
-    const token = this.curToken
     const keys: Expr[] = []
     const values: Expr[] = []
 
@@ -469,7 +450,7 @@ export class Parser {
       return null
     }
 
-    return expr.HashMap.new(token, keys, values)
+    return new expr.HashMap(keys, values)
   }
 
   //
@@ -478,7 +459,7 @@ export class Parser {
 
   private nextToken() {
     this.curToken = this.peekToken
-    this.peekToken = this.lexer.nextToken()
+    this.peekToken = this.lexer.next()
   }
 
   private curTokenIs(type: TokenType): boolean {
