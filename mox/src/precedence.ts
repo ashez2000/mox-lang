@@ -1,4 +1,4 @@
-import { TokenType } from './token'
+import { TokenType } from './token.js'
 
 export enum Precedence {
   LOWEST = 0,
@@ -12,8 +12,8 @@ export enum Precedence {
 }
 
 export const precedences = new Map<TokenType, Precedence>([
-  [TokenType.EQ, Precedence.EQUALS],
-  [TokenType.NE, Precedence.EQUALS],
+  [TokenType.EQUAL, Precedence.EQUALS],
+  [TokenType.NOT_EQUAL, Precedence.EQUALS],
   [TokenType.LT, Precedence.LTGT],
   [TokenType.GT, Precedence.LTGT],
   [TokenType.PLUS, Precedence.SUM],
