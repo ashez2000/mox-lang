@@ -37,27 +37,27 @@ export class Lexer {
 
     switch (c) {
       case '(':
-        this.addToken(TokenType.LPAREN)
+        this.addToken(TokenType.LEFT_PAREN)
         break
 
       case ')':
-        this.addToken(TokenType.RPAREN)
+        this.addToken(TokenType.RIGHT_PAREN)
         break
 
       case '{':
-        this.addToken(TokenType.LBRACE)
+        this.addToken(TokenType.LEFT_BRACE)
         break
 
       case '}':
-        this.addToken(TokenType.RBRACE)
+        this.addToken(TokenType.RIGHT_BRACE)
         break
 
       case '[':
-        this.addToken(TokenType.LBRACKET)
+        this.addToken(TokenType.LEFT_BRACKET)
         break
 
       case ']':
-        this.addToken(TokenType.RBRACKET)
+        this.addToken(TokenType.RIGHT_BRACKET)
         break
 
       case ',':
@@ -93,11 +93,11 @@ export class Lexer {
         break
 
       case '<':
-        this.addToken(TokenType.LT)
+        this.addToken(this.match('=') ? TokenType.LESS_THAN_EQ : TokenType.LESS_THAN)
         break
 
       case '>':
-        this.addToken(TokenType.GT)
+        this.addToken(this.match('=') ? TokenType.GREATER_THAN_EQ : TokenType.GREATER_THAN)
         break
 
       case '/':
@@ -221,7 +221,7 @@ export function buildLexer(input: string) {
 }
 
 const keywords = new Map<string, TokenType>([
-  ['fn', TokenType.FUNCTION],
+  ['func', TokenType.FUNC],
   ['let', TokenType.LET],
   ['true', TokenType.TRUE],
   ['false', TokenType.FALSE],
