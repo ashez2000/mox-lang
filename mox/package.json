@@ -2,7 +2,7 @@
   "name": "mox",
   "version": "1.0.0",
   "type": "module",
-  "main": "./dist/lib.mjs",
+  "main": "./dist/lib.js",
   "scripts": {
     "start": "tsx ./src/main.ts",
     "test": "tsx --test ./src/tests/*",
