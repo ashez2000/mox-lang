@@ -1,8 +1,8 @@
-import * as object from './object'
+import * as object from './object.js'
 
 const clock = new object.Builtin(() => new object.Int(performance.now()))
 
-const len = new object.Builtin((...args) => {
+const len = new object.Builtin((...args: any[]) => {
   if (args.length != 1) {
     return new object.Error('wrong number of arguments')
   }

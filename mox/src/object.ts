@@ -1,6 +1,6 @@
-import { Ident } from './ast/expr'
-import { Block } from './ast/stmt'
-import { Environment } from './environment'
+import { Ident } from './ast/expr.js'
+import { Block } from './ast/stmt.js'
+import { Environment } from './environment.js'
 
 export enum ObjectType {
   INT = 'INT',

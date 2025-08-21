@@ -20,7 +20,7 @@ export class Parser {
 
   public errors: string[]
 
-  private constructor(lexer: TokenIter) {
+  public constructor(lexer: TokenIter) {
     this.lexer = lexer
     this.curToken = new Token(TokenType.EOF, '\0', 0)
     this.peekToken = new Token(TokenType.EOF, '\0', 0)

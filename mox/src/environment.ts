@@ -1,4 +1,4 @@
-import { MoxObject } from './object'
+import { MoxObject } from './object.js'
 
 export class Environment {
   private store: Map<string, MoxObject> = new Map()
