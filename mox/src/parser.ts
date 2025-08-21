@@ -34,11 +34,11 @@ export class Parser {
       [TokenType.FALSE, this.parseBool.bind(this)],
       [TokenType.BANG, this.parsePrefix.bind(this)],
       [TokenType.MINUS, this.parsePrefix.bind(this)],
-      [TokenType.LPAREN, this.parseGroupedExpr.bind(this)],
+      [TokenType.LEFT_PAREN, this.parseGroupedExpr.bind(this)],
       [TokenType.IF, this.parseIfExpr.bind(this)],
-      [TokenType.FUNCTION, this.parseFnExpr.bind(this)],
-      [TokenType.LBRACKET, this.parseArrayLiteral.bind(this)],
-      [TokenType.LBRACE, this.parseHashMapLiteral.bind(this)],
+      [TokenType.FUNC, this.parseFnExpr.bind(this)],
+      [TokenType.LEFT_BRACKET, this.parseArrayLiteral.bind(this)],
+      [TokenType.LEFT_BRACE, this.parseHashMapLiteral.bind(this)],
     ])
 
     this.infixParseFns = new Map([
@@ -48,10 +48,10 @@ export class Parser {
       [TokenType.ASTERISK, this.parseInfix.bind(this)],
       [TokenType.EQUAL, this.parseInfix.bind(this)],
       [TokenType.NOT_EQUAL, this.parseInfix.bind(this)],
-      [TokenType.LT, this.parseInfix.bind(this)],
-      [TokenType.GT, this.parseInfix.bind(this)],
-      [TokenType.LPAREN, this.parseCallExpr.bind(this)],
-      [TokenType.LBRACKET, this.parseIndexExpression.bind(this)],
+      [TokenType.LESS_THAN, this.parseInfix.bind(this)],
+      [TokenType.GREATER_THAN, this.parseInfix.bind(this)],
+      [TokenType.LEFT_PAREN, this.parseCallExpr.bind(this)],
+      [TokenType.LEFT_BRACKET, this.parseIndexExpression.bind(this)],
     ])
 
     this.nextToken()
@@ -166,7 +166,7 @@ export class Parser {
   private parseBlock(): stmt.Block {
     const statements: Stmt[] = []
     this.nextToken()
-    while (!this.curTokenIs(TokenType.RBRACE) && !this.curTokenIs(TokenType.EOF)) {
+    while (!this.curTokenIs(TokenType.RIGHT_BRACE) && !this.curTokenIs(TokenType.EOF)) {
       const stmt = this.parseStatement()
       if (stmt != null) statements.push(stmt)
       this.nextToken()
@@ -235,7 +235,7 @@ export class Parser {
     this.nextToken() // "("
 
     const expr = this.parseExpression(Precedence.LOWEST)
-    if (!this.expectPeek(TokenType.RPAREN, "expected ')' for the grouped expression")) {
+    if (!this.expectPeek(TokenType.RIGHT_PAREN, "expected ')' for the grouped expression")) {
       return null
     }
 
@@ -259,7 +259,7 @@ export class Parser {
   private parseIfExpr(): expr.If | null {
     const token = this.curToken
 
-    if (!this.expectPeek(TokenType.LPAREN, "expected '(' after 'if'")) {
+    if (!this.expectPeek(TokenType.LEFT_PAREN, "expected '(' after 'if'")) {
       return null
     }
 
@@ -270,11 +270,11 @@ export class Parser {
       return null
     }
 
-    if (!this.expectPeek(TokenType.RPAREN, "expected ')' after 'if condition'")) {
+    if (!this.expectPeek(TokenType.RIGHT_PAREN, "expected ')' after 'if condition'")) {
       return null
     }
 
-    if (!this.expectPeek(TokenType.LBRACE, "expected '{' after 'if condition'")) {
+    if (!this.expectPeek(TokenType.LEFT_BRACE, "expected '{' after 'if condition'")) {
       return null
     }
 
@@ -283,7 +283,7 @@ export class Parser {
     let alternative: stmt.Block | undefined
     if (this.peekTokenIs(TokenType.ELSE)) {
       this.nextToken()
-      if (!this.expectPeek(TokenType.LBRACE, "expected '{' after 'else'")) {
+      if (!this.expectPeek(TokenType.LEFT_BRACE, "expected '{' after 'else'")) {
         return null
       }
       alternative = this.parseBlock()
@@ -296,7 +296,7 @@ export class Parser {
   private parseFnExpr(): expr.Fn | null {
     const fnToken = this.curToken
 
-    if (!this.expectPeek(TokenType.LPAREN, "expected '(' after 'fn'")) {
+    if (!this.expectPeek(TokenType.LEFT_PAREN, "expected '(' after 'fn'")) {
       return null
     }
 
@@ -305,7 +305,7 @@ export class Parser {
       return null
     }
 
-    if (!this.expectPeek(TokenType.LBRACE, "expected '{' after function parameters")) {
+    if (!this.expectPeek(TokenType.LEFT_BRACE, "expected '{' after function parameters")) {
       return null
     }
 
@@ -318,7 +318,7 @@ export class Parser {
   private parseFnParams(): expr.Ident[] | null {
     const idents: expr.Ident[] = []
 
-    if (this.peekTokenIs(TokenType.RPAREN)) {
+    if (this.peekTokenIs(TokenType.RIGHT_PAREN)) {
       this.nextToken()
       return idents
     }
@@ -334,7 +334,7 @@ export class Parser {
       idents.push(ident)
     }
 
-    if (!this.expectPeek(TokenType.RPAREN, "expected ')' after function parameters")) {
+    if (!this.expectPeek(TokenType.RIGHT_PAREN, "expected ')' after function parameters")) {
       return null
     }
 
@@ -344,7 +344,7 @@ export class Parser {
   private parseCallExpr(fnExpr: Expr): Expr | null {
     const tok = this.curToken
 
-    const args = this.parseExpressionList(TokenType.RPAREN)
+    const args = this.parseExpressionList(TokenType.RIGHT_PAREN)
     if (!args) {
       return null
     }
@@ -355,7 +355,7 @@ export class Parser {
   private parseArrayLiteral(): expr.Array | null {
     const token = this.curToken
 
-    const elements = this.parseExpressionList(TokenType.RBRACKET)
+    const elements = this.parseExpressionList(TokenType.RIGHT_BRACKET)
     if (!elements) {
       return null
     }
@@ -405,7 +405,7 @@ export class Parser {
       return null
     }
 
-    if (!this.expectPeek(TokenType.RBRACKET, "expected ']' after index expression")) {
+    if (!this.expectPeek(TokenType.RIGHT_BRACKET, "expected ']' after index expression")) {
       return null
     }
 
@@ -416,7 +416,7 @@ export class Parser {
     const keys: Expr[] = []
     const values: Expr[] = []
 
-    while (!this.peekTokenIs(TokenType.RBRACE)) {
+    while (!this.peekTokenIs(TokenType.RIGHT_BRACE)) {
       this.nextToken()
 
       const key = this.parseExpression(Precedence.LOWEST)
@@ -436,7 +436,7 @@ export class Parser {
       }
 
       if (
-        !this.peekTokenIs(TokenType.RBRACE) &&
+        !this.peekTokenIs(TokenType.RIGHT_BRACE) &&
         !this.expectPeek(TokenType.COMMA, "expected ',' after value in hashmap")
       ) {
         return null
@@ -446,7 +446,7 @@ export class Parser {
       values.push(value)
     }
 
-    if (!this.expectPeek(TokenType.RBRACE, "expected '}' for hashmap literal")) {
+    if (!this.expectPeek(TokenType.RIGHT_BRACE, "expected '}' for hashmap literal")) {
       return null
     }
 
