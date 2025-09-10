@@ -1,7 +1,7 @@
 /** Operation Code */
 export enum OpCode {
   /** Instruction to return from the current function */
-  OP_RETURN,
+  OP_RETURN = 0,
 }
 
 /**
