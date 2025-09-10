@@ -1,0 +1,11 @@
+{
+  "name": "mox-bytecode",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "tsx ./src/main.ts"
+  },
+  "devDependencies": {
+    "@tsconfig/node22": "^22.0.2",
+    "tsx": "^4.17.0"
+  }
+}
