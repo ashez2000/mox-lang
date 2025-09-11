@@ -15,6 +15,7 @@ export enum OpCode {
 export class Chunk {
   // Ideally code: Byte[]
   public code: number[] = []
+  public lines: number[] = []
 
   // Constants
   public valuePool: ValuePool
@@ -23,8 +24,9 @@ export class Chunk {
     this.valuePool = new ValuePool()
   }
 
-  public write(byte: number) {
+  public write(byte: number, line: number) {
     this.code.push(byte)
+    this.lines.push(line)
   }
 
   public addConstant(value: Value): number {
