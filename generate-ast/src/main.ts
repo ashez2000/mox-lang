@@ -14,6 +14,7 @@ function main(args: string[]) {
     'Print      - expr: expr.Expr',
     'Expression - expr: expr.Expr',
     'Block      - statements: Stmt[]',
+    'Program    - statements: Stmt[]',
   ])
 
   defineAst(outputDir, 'Expr', [

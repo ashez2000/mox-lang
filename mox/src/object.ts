@@ -1,5 +1,5 @@
-import { Ident } from './ast/expr.js'
-import { Block } from './ast/stmt.js'
+import { Ident } from './expr.js'
+import { Block } from './stmt.js'
 import { Environment } from './environment.js'
 
 export enum ObjectType {

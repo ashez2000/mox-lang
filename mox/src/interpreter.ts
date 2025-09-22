@@ -1,5 +1,5 @@
-import * as stmt from './ast/stmt.js'
-import * as expr from './ast/expr.js'
+import * as stmt from './stmt.js'
+import * as expr from './expr.js'
 import * as object from './object.js'
 import builtin from './builtin.js'
 import { Environment } from './environment.js'
@@ -54,13 +54,13 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   }
 
   visitLetStmt(stmt: stmt.Let): object.MoxObject {
-    const value = this.evaluate(stmt.expr)
-    this.environment.set(stmt.name.name, value)
+    const value = this.evaluate(stmt.value)
+    this.environment.set(stmt.name.name.literal, value)
     return value
   }
 
   visitReturnStmt(stmt: stmt.Return): object.MoxObject {
-    const value = this.evaluate(stmt.expr)
+    const value = this.evaluate(stmt.value as expr.Expr)
     return new object.Return(value)
   }
 
@@ -70,7 +70,7 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
     return value
   }
 
-  visitExprStmt(stmt: stmt.Expr): object.MoxObject {
+  visitExpressionStmt(stmt: stmt.Expression): object.MoxObject {
     return this.evaluate(stmt.expr)
   }
 
@@ -97,7 +97,7 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   //
 
   visitIdentExpr(expr: expr.Ident): object.MoxObject {
-    return this.environment.get(expr.name) ?? builtin.get(expr.name) ?? NULL
+    return this.environment.get(expr.name.literal) ?? builtin.get(expr.name.literal) ?? NULL
   }
 
   visitIntExpr(expr: expr.Int): object.MoxObject {
@@ -114,7 +114,7 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
 
   visitPrefixExpr(expr: expr.Prefix): object.MoxObject {
     const right = this.evaluate(expr.right)
-    switch (expr.operator) {
+    switch (expr.operator.literal) {
       case '!':
         return evalBangOperator(right)
       case '-':
@@ -127,29 +127,29 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   visitInfixExpr(expr: expr.Infix): object.MoxObject {
     const left = this.evaluate(expr.left)
     const right = this.evaluate(expr.right)
-    return evalInfixExpression(expr.operator, left, right)
+    return evalInfixExpression(expr.operator.literal, left, right)
   }
 
   visitIfExpr(expr: expr.If): object.MoxObject {
     const condition = this.evaluate(expr.condidtion)
 
     if (isTruthy(condition)) {
-      return this.execute(expr.consequence)
+      return this.execute(expr.thenBlock)
     }
 
-    if (expr.alternative) {
-      return this.execute(expr.alternative)
+    if (expr.elseBlock) {
+      return this.execute(expr.elseBlock)
     }
 
     return NULL
   }
 
-  visitFuncExpr(expr: expr.Func): object.MoxObject {
+  visitFnExpr(expr: expr.Fn): object.MoxObject {
     return new object.Func(expr.parameters, expr.body, this.environment)
   }
 
   visitCallExpr(expr: expr.Call): object.MoxObject {
-    const func = this.evaluate(expr.func)
+    const func = this.evaluate(expr.fnExpr)
     const args = this.evalExpressions(expr.args)
 
     if (func instanceof object.Func) {
@@ -189,7 +189,7 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   extendFuncEnv(func: object.Func, args: MoxObject[]) {
     const env = new Environment(func.env)
     for (let i = 0; i < func.params.length; i++) {
-      env.set(func.params[i].name, args[i])
+      env.set(func.params[i].name.literal, args[i])
     }
     return env
   }
