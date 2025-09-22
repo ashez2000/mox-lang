@@ -59,7 +59,7 @@ export class Parser {
   }
 
   /** parse parses the program and returns AST = Stmt[] */
-  parse(): Stmt[] {
+  parse(): stmt.Program {
     const statements: Stmt[] = []
 
     while (!this.curTokenIs(TokenType.EOF)) {
@@ -70,7 +70,7 @@ export class Parser {
       this.nextToken()
     }
 
-    return statements
+    return new stmt.Program(statements)
   }
 
   //
