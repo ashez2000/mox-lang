@@ -1,0 +1,195 @@
+// ================================
+// TEMPLE OF THE BANANA KING
+// A text-based adventure in Monkey
+// ================================
+
+// --- Data setup ---
+let rooms = {
+    "entrance": {
+        "desc": "You stand before the ancient temple. The door is ajar.",
+        "exits": { "north": "hall" }
+    },
+    "hall": {
+        "desc": "A long hallway filled with carvings of bananas. There is a door east and a staircase down.",
+        "exits": { "south": "entrance", "east": "library", "down": "dungeon" }
+    },
+    "library": {
+        "desc": "You enter a dusty library. Scrolls crumble as you touch them.",
+        "exits": { "west": "hall" }
+    },
+    "dungeon": {
+        "desc": "It’s dark. You hear chittering. Something moves in the shadows.",
+        "exits": { "up": "hall" }
+    }
+};
+
+let items = {
+    "torch": { "desc": "A wooden torch. Still usable.", "location": "entrance" },
+    "banana": { "desc": "Golden banana of power.", "location": "library" },
+    "key": { "desc": "Rusty old key. Probably important.", "location": "dungeon" }
+};
+
+let player = { "room": "entrance", "inventory": [] };
+
+// --- Helper functions ---
+let println = fn(x) { puts(x); };
+
+let describe_room = fn() {
+    let room = rooms[player["room"]];
+    println(room["desc"]);
+
+    let exits = room["exits"];
+    let keys = keys_fn(exits);
+    println("Exits: " + join(keys, ", "));
+};
+
+let keys_fn = fn(hash) {
+    let out = [];
+    let i = 0;
+    for (k in hash) {
+        out[i] = k;
+        i = i + 1;
+    }
+    out;
+};
+
+let join = fn(arr, sep) {
+    let out = "";
+    let i = 0;
+    while (i < len(arr)) {
+        out = out + arr[i];
+        if (i < len(arr) - 1) {
+            out = out + sep;
+        }
+        i = i + 1;
+    }
+    out;
+};
+
+let move = fn(dir) {
+    let room = rooms[player["room"]];
+    let exits = room["exits"];
+    if (exits[dir]) {
+        player["room"] = exits[dir];
+        describe_room();
+    } else {
+        println("You can’t go that way.");
+    }
+};
+
+let look = fn() {
+    describe_room();
+    println("");
+    println("You see:");
+    for (name in items) {
+        let it = items[name];
+        if (it["location"] == player["room"]) {
+            println("- " + name + ": " + it["desc"]);
+        }
+    }
+};
+
+let take = fn(name) {
+    let it = items[name];
+    if (it) {
+        if (it["location"] == player["room"]) {
+            items[name]["location"] = "inventory";
+            push(player["inventory"], name);
+            println("You picked up the " + name + ".");
+        } else {
+            println("There is no " + name + " here.");
+        }
+    } else {
+        println("You don't see that item.");
+    }
+};
+
+let inventory = fn() {
+    println("You are carrying:");
+    let i = 0;
+    while (i < len(player["inventory"])) {
+        println("- " + player["inventory"][i]);
+        i = i + 1;
+    }
+};
+
+// --- Command system ---
+let commands = {
+    "look": fn() { look(); },
+    "north": fn() { move("north"); },
+    "south": fn() { move("south"); },
+    "east": fn() { move("east"); },
+    "west": fn() { move("west"); },
+    "up": fn() { move("up"); },
+    "down": fn() { move("down"); },
+    "take": fn(arg) { take(arg); },
+    "inventory": fn() { inventory(); }
+};
+
+let execute = fn(line) {
+    let parts = split(line, " ");
+    let cmd = parts[0];
+    let arg = "";
+    if (len(parts) > 1) {
+        arg = parts[1];
+    }
+
+    if (commands[cmd]) {
+        let fnc = commands[cmd];
+        fnc(arg);
+    } else {
+        println("Unknown command: " + cmd);
+    }
+};
+
+// --- String splitting (Monkey style) ---
+let split = fn(s, sep) {
+    let out = [];
+    let cur = "";
+    let i = 0;
+    while (i < len(s)) {
+        let ch = substr(s, i, 1);
+        if (ch == sep) {
+            push(out, cur);
+            cur = "";
+        } else {
+            cur = cur + ch;
+        }
+        i = i + 1;
+    }
+    push(out, cur);
+    out;
+};
+
+// --- Minimal substring helper ---
+let substr = fn(s, start, length) {
+    let out = "";
+    let i = start;
+    while (i < start + length) {
+        if (i < len(s)) {
+            out = out + s[i];
+        }
+        i = i + 1;
+    }
+    out;
+};
+
+// --- Main game loop (simulated input) ---
+println("Welcome to the Temple of the Banana King!");
+describe_room();
+println("");
+
+let input = fn() {
+    // Simulated input sequence
+    let cmds = ["look", "take torch", "north", "east", "look", "take banana", "inventory"];
+    let i = 0;
+    while (i < len(cmds)) {
+        println("> " + cmds[i]);
+        execute(cmds[i]);
+        println("");
+        i = i + 1;
+    }
+};
+
+input();
+println("Your quest is complete!");
