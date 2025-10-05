@@ -5,7 +5,7 @@
   "main": "./dist/lib.js",
   "scripts": {
     "start": "tsx ./src/main.ts",
-    "test": "tsx --test ./src/tests/*",
+    "test": "tsx --test ./src/__tests__/*",
     "build": "tsup ./src/lib.ts --dts --format esm"
   },
   "devDependencies": {

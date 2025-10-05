@@ -1,4 +1,4 @@
-import { Token, TokenType } from './token.js'
+import { Token, TokenType, keywords } from './token.js'
 import { formattedError } from './error.js'
 
 export class Lexer {
@@ -24,7 +24,7 @@ export class Lexer {
       this.scanToken()
     }
 
-    this.tokens.push(new Token(TokenType.EOF, '\0', this.line))
+    this.tokens.push(new Token(TokenType.Eof, this.line))
     return this.tokens
   }
 
@@ -37,67 +37,67 @@ export class Lexer {
 
     switch (c) {
       case '(':
-        this.addToken(TokenType.LEFT_PAREN)
+        this.addToken(TokenType.LParen)
         break
 
       case ')':
-        this.addToken(TokenType.RIGHT_PAREN)
+        this.addToken(TokenType.RParen)
         break
 
       case '{':
-        this.addToken(TokenType.LEFT_BRACE)
+        this.addToken(TokenType.LBrace)
         break
 
       case '}':
-        this.addToken(TokenType.RIGHT_BRACE)
+        this.addToken(TokenType.RBrace)
         break
 
       case '[':
-        this.addToken(TokenType.LEFT_BRACKET)
+        this.addToken(TokenType.LBracket)
         break
 
       case ']':
-        this.addToken(TokenType.RIGHT_BRACKET)
+        this.addToken(TokenType.RBracket)
         break
 
       case ',':
-        this.addToken(TokenType.COMMA)
+        this.addToken(TokenType.Comma)
         break
 
       case '-':
-        this.addToken(TokenType.MINUS)
+        this.addToken(TokenType.Minus)
         break
 
       case '+':
-        this.addToken(TokenType.PLUS)
+        this.addToken(TokenType.Plus)
         break
 
       case ';':
-        this.addToken(TokenType.SEMICOLON)
+        this.addToken(TokenType.Semicolon)
         break
 
       case '*':
-        this.addToken(TokenType.ASTERISK)
+        this.addToken(TokenType.Asterisk)
         break
 
       case ':':
-        this.addToken(TokenType.COLON)
+        this.addToken(TokenType.Colon)
         break
 
       case '!':
-        this.addToken(this.match('=') ? TokenType.NOT_EQUAL : TokenType.BANG)
+        this.addToken(this.match('=') ? TokenType.NotEq : TokenType.Bang)
         break
 
       case '=':
-        this.addToken(this.match('=') ? TokenType.EQUAL : TokenType.ASSIGN)
+        this.addToken(this.match('=') ? TokenType.Eq : TokenType.Assign)
         break
 
       case '<':
-        this.addToken(this.match('=') ? TokenType.LESS_THAN_EQ : TokenType.LESS_THAN)
+        this.addToken(this.match('=') ? TokenType.Lte : TokenType.Lt)
         break
 
       case '>':
-        this.addToken(this.match('=') ? TokenType.GREATER_THAN_EQ : TokenType.GREATER_THAN)
+        this.addToken(this.match('=') ? TokenType.Gte : TokenType.Gt)
         break
 
       case '/':
@@ -106,7 +106,7 @@ export class Lexer {
             this.advance()
           }
         } else {
-          this.addToken(TokenType.SLASH)
+          this.addToken(TokenType.Slash)
         }
 
       case ' ':
@@ -128,7 +128,9 @@ export class Lexer {
         } else if (isAlpha(c)) {
           this.identifier()
         } else {
-          this.errors.push(formattedError(this.line, `Unexpected character '${c}'`))
+          this.errors.push(
+            formattedError(this.line, `Unexpected character '${c}'`)
+          )
         }
     }
   }
@@ -136,12 +138,16 @@ export class Lexer {
   private identifier() {
     while (isAlphaNumeric(this.peek())) this.advance()
     const lexeme = this.source.slice(this.start, this.current)
-    this.addToken(keywords.get(lexeme) ?? TokenType.IDENT)
+    if (keywords.has(lexeme)) {
+      this.addToken(keywords.get(lexeme)!)
+    } else {
+      this.addTokenLiteral(TokenType.Ident)
+    }
   }
 
   private number() {
     while (isDigit(this.peek())) this.advance()
-    this.addTokenLiteral(TokenType.INT)
+    this.addTokenLiteral(TokenType.Int)
   }
 
   private string() {
@@ -156,7 +162,7 @@ export class Lexer {
 
     this.advance()
 
-    this.addTokenLiteral(TokenType.STRING)
+    this.addTokenLiteral(TokenType.String)
   }
 
   private match(expected: string): boolean {
@@ -177,12 +183,12 @@ export class Lexer {
   }
 
   private addToken(type: TokenType) {
-    this.addTokenLiteral(type)
+    this.tokens.push(new Token(type, this.line))
   }
 
   private addTokenLiteral(type: TokenType) {
     const literal = this.source.substring(this.start, this.current)
-    this.tokens.push(new Token(type, literal, this.line))
+    this.tokens.push(new Token(type, this.line, literal))
   }
 
   private isAtEnd(): boolean {
@@ -219,17 +225,6 @@ export function buildLexer(input: string) {
 
   return { tokenIter, errors }
 }
-
-const keywords = new Map<string, TokenType>([
-  ['func', TokenType.FUNC],
-  ['let', TokenType.LET],
-  ['true', TokenType.TRUE],
-  ['false', TokenType.FALSE],
-  ['if', TokenType.IF],
-  ['else', TokenType.ELSE],
-  ['return', TokenType.RETURN],
-  ['print', TokenType.PRINT],
-])
 
 function isDigit(c: string): boolean {
   return c >= '0' && c <= '9'
