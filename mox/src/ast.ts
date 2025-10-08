@@ -27,7 +27,8 @@ export class Program implements Ast {
  */
 export class Let implements Statement {
   public type: AstType = AstType.Let
-  constructor(public ident: Ident, public expr: Expression) {}
+  // TODO: Make expr required
+  constructor(public name: Ident, public expr?: Expression) {}
 }
 
 /**
