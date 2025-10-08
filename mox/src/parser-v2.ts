@@ -1,4 +1,4 @@
-import { Ident, Let, Program, Statement } from './ast.js'
+import { Ident, Let, Program, Return, Statement } from './ast.js'
 import { TokenIter } from './lexer.js'
 import { Token, TokenType } from './token.js'
 
@@ -34,6 +34,8 @@ export class Parser {
     switch (this.curToken.type) {
       case TokenType.Let:
         return this.parseLetStatement()
+      case TokenType.Return:
+        return this.parseReturnStatement()
       default:
         return null
     }
@@ -56,6 +58,17 @@ export class Parser {
     }
 
     return new Let(name)
+  }
+
+  private parseReturnStatement(): Optional<Return> {
+    let keyword = this.curToken
+    this.nextToken()
+
+    while (!this.curTokenIs(TokenType.Semicolon)) {
+      this.nextToken()
+    }
+
+    return new Return(keyword)
   }
 
   // ### Helpers ###

@@ -12,6 +12,7 @@ export enum AstType {
   Program = 0,
   Let,
   Ident,
+  Return,
 }
 
 /**
@@ -29,6 +30,14 @@ export class Let implements Statement {
   public type: AstType = AstType.Let
   // TODO: Make expr required
   constructor(public name: Ident, public expr?: Expression) {}
+}
+
+/**
+ * Return Ast
+ */
+export class Return implements Statement {
+  public type: AstType = AstType.Return
+  constructor(public keyword: Token, public expr?: Expression) {}
 }
 
 /**
