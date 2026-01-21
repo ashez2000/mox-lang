@@ -10,7 +10,9 @@ const NULL = new object.Null()
 const TRUE = new object.Bool(true)
 const FALSE = new object.Bool(false)
 
-export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObject> {
+export class Interpreter
+  implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObject>
+{
   stdout: string[]
   private environment = new Environment()
 
@@ -55,7 +57,7 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
 
   visitLetStmt(stmt: stmt.Let): object.MoxObject {
     const value = this.evaluate(stmt.value)
-    this.environment.set(stmt.name.name.literal, value)
+    this.environment.set(stmt.name.name.literal!, value)
     return value
   }
 
@@ -97,7 +99,11 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   //
 
   visitIdentExpr(expr: expr.Ident): object.MoxObject {
-    return this.environment.get(expr.name.literal) ?? builtin.get(expr.name.literal) ?? NULL
+    return (
+      this.environment.get(expr.name.literal!) ??
+      builtin.get(expr.name.literal!) ??
+      NULL
+    )
   }
 
   visitIntExpr(expr: expr.Int): object.MoxObject {
@@ -127,7 +133,7 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   visitInfixExpr(expr: expr.Infix): object.MoxObject {
     const left = this.evaluate(expr.left)
     const right = this.evaluate(expr.right)
-    return evalInfixExpression(expr.operator.literal, left, right)
+    return evalInfixExpression(expr.operator.literal!, left, right)
   }
 
   visitIfExpr(expr: expr.If): object.MoxObject {
@@ -189,7 +195,7 @@ export class Interpreter implements stmt.Visitor<MoxObject>, expr.Visitor<MoxObj
   extendFuncEnv(func: object.Func, args: MoxObject[]) {
     const env = new Environment(func.env)
     for (let i = 0; i < func.params.length; i++) {
-      env.set(func.params[i].name.literal, args[i])
+      env.set(func.params[i].name.literal!, args[i])
     }
     return env
   }
@@ -278,7 +284,11 @@ function evalMinusPrifixOperator(obj: MoxObject): MoxObject {
   return new object.Int(-obj.value)
 }
 
-function evalInfixExpression(operator: string, left: MoxObject, right: MoxObject) {
+function evalInfixExpression(
+  operator: string,
+  left: MoxObject,
+  right: MoxObject,
+) {
   if (left instanceof object.Int && right instanceof object.Int) {
     return evalIntInfixExpression(operator, left, right)
   }
@@ -298,7 +308,11 @@ function evalInfixExpression(operator: string, left: MoxObject, right: MoxObject
   return error(`unknown operator: '${operator}'`)
 }
 
-function evalIntInfixExpression(operator: string, left: object.Int, right: object.Int) {
+function evalIntInfixExpression(
+  operator: string,
+  left: object.Int,
+  right: object.Int,
+) {
   switch (operator) {
     case '+':
       return new object.Int(left.value + right.value)
