@@ -15,8 +15,6 @@ export enum TokenType {
   Slash,
   Lt,
   Gt,
-  Lte,
-  Gte,
   Eq,
   NotEq,
   Comma,
@@ -38,7 +36,7 @@ export enum TokenType {
 }
 
 /**
- * Keywords in Mox
+ * Keywords in Mox Lang
  */
 export const keywords = new Map<String, TokenType>([
   ['fn', TokenType.Function],
@@ -57,16 +55,6 @@ export class Token {
   constructor(
     public type: TokenType,
     public line: number = 0,
-    public literal?: string
+    public literal?: string,
   ) {}
-
-  static debug(t: Token) {
-    const line = String(t.line).padStart(4, '0')
-    const typeName = TokenType[t.type] ?? 'Unknown'
-    if (t.literal) {
-      console.log(`${line} ${typeName}(${t.literal})`)
-    } else {
-      console.log(`${line} ${typeName}`)
-    }
-  }
 }
