@@ -28,6 +28,9 @@ importers:
       '@tsconfig/node20':
         specifier: ^20.1.9
         version: 20.1.9
+      '@tsconfig/node24':
+        specifier: ^24.0.4
+        version: 24.0.4
       '@types/node':
         specifier: ^22.19.11
         version: 22.19.11
@@ -944,6 +947,9 @@ packages:
 
   '@tsconfig/node20@20.1.9':
     resolution: {integrity: sha512-IjlTv1RsvnPtUcjTqtVsZExKVq+KQx4g5pCP5tI7rAs6Xesl2qFwSz/tPDBC4JajkL/MlezBu3gPUwqRHl+RIg==}
+
+  '@tsconfig/node24@24.0.4':
+    resolution: {integrity: sha512-2A933l5P5oCbv6qSxHs7ckKwobs8BDAe9SJ/Xr2Hy+nDlwmLE1GhFh/g/vXGRZWgxBg9nX/5piDtHR9Dkw/XuA==}
 
   '@types/babel__core@7.20.5':
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
@@ -2644,6 +2650,8 @@ snapshots:
   '@tsconfig/node20@20.1.4': {}
 
   '@tsconfig/node20@20.1.9': {}
+
+  '@tsconfig/node24@24.0.4': {}
 
   '@types/babel__core@7.20.5':
     dependencies:

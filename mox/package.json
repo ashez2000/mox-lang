@@ -9,7 +9,7 @@
     "build": "tsup ./src/lib.ts --dts --format esm"
   },
   "devDependencies": {
-    "@tsconfig/node20": "^20.1.9",
+    "@tsconfig/node24": "^24.0.4",
     "@types/node": "^22.19.11",
     "tsup": "^8.5.1",
     "tsx": "^4.21.0",
