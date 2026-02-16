@@ -130,20 +130,6 @@ export class Parser {
     return new stmt.Return(returnToken, value)
   }
 
-  private parsePrintStatement(): stmt.Print | null {
-    this.nextToken()
-    const value = this.parseExpression(Precedence.Lowest)
-    if (!value) {
-      return null
-    }
-
-    if (this.peekTokenIs(TokenType.Semicolon)) {
-      this.nextToken()
-    }
-
-    return new stmt.Print(value)
-  }
-
   private parseExprStmt(): stmt.Expression | null {
     const value = this.parseExpression(Precedence.Lowest)
     if (!value) {

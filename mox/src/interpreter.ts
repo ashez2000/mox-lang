@@ -3,6 +3,7 @@ import * as expr from './expr.js'
 import * as object from './object.js'
 import builtin from './builtin.js'
 import { Environment } from './environment.js'
+import { Token, TokenType } from './token.js'
 
 type MoxObject = object.MoxObject
 
@@ -133,7 +134,7 @@ export class Interpreter
   visitInfixExpr(expr: expr.Infix): object.MoxObject {
     const left = this.evaluate(expr.left)
     const right = this.evaluate(expr.right)
-    return evalInfixExpression(expr.operator.literal!, left, right)
+    return evalInfixExpression(expr.operator, left, right)
   }
 
   visitIfExpr(expr: expr.If): object.MoxObject {
@@ -285,7 +286,7 @@ function evalMinusPrifixOperator(obj: MoxObject): MoxObject {
 }
 
 function evalInfixExpression(
-  operator: string,
+  operator: Token,
   left: MoxObject,
   right: MoxObject,
 ) {
@@ -293,11 +294,11 @@ function evalInfixExpression(
     return evalIntInfixExpression(operator, left, right)
   }
 
-  if (operator == '==') {
+  if (operator.type == TokenType.Eq) {
     return naiveBooltoObject(left == right)
   }
 
-  if (operator == '!=') {
+  if (operator.type == TokenType.NotEq) {
     return naiveBooltoObject(left != right)
   }
 
@@ -309,26 +310,26 @@ function evalInfixExpression(
 }
 
 function evalIntInfixExpression(
-  operator: string,
+  operator: Token,
   left: object.Int,
   right: object.Int,
 ) {
-  switch (operator) {
-    case '+':
+  switch (operator.type) {
+    case TokenType.Plus:
       return new object.Int(left.value + right.value)
-    case '-':
+    case TokenType.Minus:
       return new object.Int(left.value - right.value)
-    case '*':
+    case TokenType.Asterisk:
       return new object.Int(left.value * right.value)
-    case '/':
+    case TokenType.Slash:
       return new object.Int(left.value / right.value)
-    case '<':
+    case TokenType.Lt:
       return naiveBooltoObject(left.value < right.value)
-    case '>':
+    case TokenType.Gt:
       return naiveBooltoObject(left.value > right.value)
-    case '==':
+    case TokenType.Eq:
       return naiveBooltoObject(left.value == right.value)
-    case '!=':
+    case TokenType.Gt:
       return naiveBooltoObject(left.value != right.value)
     default:
       return error(`unknown operator: '${operator}'`)
