@@ -93,11 +93,11 @@ export class Lexer {
         break
 
       case '<':
-        this.addToken(this.match('=') ? TokenType.Lte : TokenType.Lt)
+        this.addToken(TokenType.Lt)
         break
 
       case '>':
-        this.addToken(this.match('=') ? TokenType.Gte : TokenType.Gt)
+        this.addToken(TokenType.Gt)
         break
 
       case '/':
@@ -129,7 +129,7 @@ export class Lexer {
           this.identifier()
         } else {
           this.errors.push(
-            formattedError(this.line, `Unexpected character '${c}'`)
+            formattedError(this.line, `Unexpected character '${c}'`),
           )
         }
     }
