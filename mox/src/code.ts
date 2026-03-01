@@ -1,11 +1,17 @@
-type Instructions = number[]
+import { MoxObject } from './object.js'
 
-enum OpCode {
-  Constant,
+export abstract class OpCode {}
+
+export class ConstantOpCode extends OpCode {
+  constructor(public value: MoxObject) {
+    super()
+  }
 }
 
-class Definition {
-  constructor(public name: string, public operandWidth: number[]) {}
+export class AddOpCode extends OpCode {
+  constructor() {
+    super()
+  }
 }
 
-const definitions = new Map<OpCode, Definition>([[OpCode.Constant, new Definition('OpConstant', [])]])
+export const ADD_OPCODE = new AddOpCode()

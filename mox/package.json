@@ -5,6 +5,7 @@
   "main": "./dist/lib.js",
   "scripts": {
     "start": "tsx ./src/main.ts",
+    "start:vm": "tsx ./src/vm-repl.ts",
     "test": "tsx --test ./src/__tests__/*",
     "build": "tsup ./src/lib.ts --dts --format esm"
   },
