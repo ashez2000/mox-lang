@@ -1,11 +1,15 @@
 import { Token, TokenType } from './token.js'
 
-export function formattedError(line: number, message: string, where: string = '') {
+export function formattedError(
+  line: number,
+  message: string,
+  where: string = '',
+) {
   return `[line ${line}] Error${where}: ${message}`
 }
 
 export function formattedErrorWithToken(token: Token, message: string) {
-  if (token.type == TokenType.EOF) {
+  if (token.type == TokenType.Eof) {
     return formattedError(token.line, message, ' at end')
   }
 
