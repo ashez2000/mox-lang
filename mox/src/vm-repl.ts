@@ -1,7 +1,6 @@
 import readline from 'node:readline'
 import { buildLexer } from './lexer.js'
 import { Parser } from './parser.js'
-import { Interpreter } from './interpreter.js'
 import { Complier } from './compiler.js'
 import { Vm } from './vm.js'
 
@@ -33,6 +32,8 @@ export default async function repl() {
 
     const parser = new Parser(tokenIter)
     const program = parser.parse()
+    console.log(JSON.stringify(program.statements))
+
     const compiler = new Complier()
     compiler.compile(program)
     console.log(compiler.instructions)
