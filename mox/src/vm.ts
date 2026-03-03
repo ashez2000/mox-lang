@@ -1,4 +1,4 @@
-import { AddOpCode, ConstantOpCode, OpCode } from './code.js'
+import { OP_ADD, OpConstant, OpCode } from './code.js'
 import * as object from './object.js'
 
 type MoxObject = object.MoxObject
@@ -16,11 +16,11 @@ export class Vm {
 
   run() {
     for (let i of this.instruction) {
-      if (i instanceof ConstantOpCode) {
+      if (i instanceof OpConstant) {
         this.push(i.value)
       }
 
-      if (i instanceof AddOpCode) {
+      if (i == OP_ADD) {
         let r = this.pop() as object.Int
         let l = this.pop() as object.Int
         this.push(new object.Int(r.value + l.value))

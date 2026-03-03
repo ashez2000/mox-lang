@@ -1,4 +1,4 @@
-import { ADD_OPCODE, ConstantOpCode, OpCode } from './code.js'
+import { OP_ADD, OpConstant, OpCode } from './code.js'
 import * as expr from './expr.js'
 import * as stmt from './stmt.js'
 import * as object from './object.js'
@@ -26,11 +26,11 @@ export class Complier {
       this.compileExpr(e.left)
       this.compileExpr(e.right)
       // TODO: match operator
-      this.instructions.push(ADD_OPCODE)
+      this.instructions.push(OP_ADD)
     }
 
     if (e instanceof expr.Int) {
-      this.instructions.push(new ConstantOpCode(new object.Int(e.value)))
+      this.instructions.push(new OpConstant(new object.Int(e.value)))
     }
   }
 }
