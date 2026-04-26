@@ -1,239 +1,200 @@
 import { Token, TokenType, keywords } from './token.js'
-import { formattedError } from './error.js'
 
 export class Lexer {
-  private source: string
-  private tokens: Token[]
-  private start: number
-  private current: number
-  private line: number
-  private errors: string[]
+  private input: string
 
-  constructor(source: string) {
-    this.source = source
-    this.tokens = []
-    this.start = 0
-    this.current = 0
-    this.line = 1
-    this.errors = []
+  private curPos: number = 0
+  private peekPos: number = 0
+  private line: number = 1
+  private ch: string = '\0'
+
+  constructor(input: string) {
+    this.input = input
+    this.readChar()
   }
 
-  scanTokens(): Token[] {
-    while (!this.isAtEnd()) {
-      this.start = this.current
-      this.scanToken()
-    }
+  nextToken(): Token {
+    let tok: Token
 
-    this.tokens.push(new Token(TokenType.Eof, this.line))
-    return this.tokens
-  }
+    this.skipWhitespace()
 
-  getErrors() {
-    return this.errors
-  }
-
-  private scanToken() {
-    const c = this.advance()
-
-    switch (c) {
-      case '(':
-        this.addToken(TokenType.LParen)
-        break
-
-      case ')':
-        this.addToken(TokenType.RParen)
-        break
-
-      case '{':
-        this.addToken(TokenType.LBrace)
-        break
-
-      case '}':
-        this.addToken(TokenType.RBrace)
-        break
-
-      case '[':
-        this.addToken(TokenType.LBracket)
-        break
-
-      case ']':
-        this.addToken(TokenType.RBracket)
-        break
-
-      case ',':
-        this.addToken(TokenType.Comma)
-        break
-
-      case '-':
-        this.addToken(TokenType.Minus)
+    switch (this.ch) {
+      case '=':
+        if (this.peekChar() == '=') {
+          this.readChar()
+          tok = this.createToken(TokenType.Eq)
+        } else {
+          tok = this.createToken(TokenType.Assign)
+        }
         break
 
       case '+':
-        this.addToken(TokenType.Plus)
+        tok = this.createToken(TokenType.Plus)
         break
 
-      case ';':
-        this.addToken(TokenType.Semicolon)
-        break
-
-      case '*':
-        this.addToken(TokenType.Asterisk)
-        break
-
-      case ':':
-        this.addToken(TokenType.Colon)
+      case '-':
+        tok = this.createToken(TokenType.Minus)
         break
 
       case '!':
-        this.addToken(this.match('=') ? TokenType.NotEq : TokenType.Bang)
-        break
-
-      case '=':
-        this.addToken(this.match('=') ? TokenType.Eq : TokenType.Assign)
-        break
-
-      case '<':
-        this.addToken(TokenType.Lt)
-        break
-
-      case '>':
-        this.addToken(TokenType.Gt)
+        if (this.peekChar() == '=') {
+          this.readChar()
+          tok = this.createToken(TokenType.NotEq)
+        } else {
+          tok = this.createToken(TokenType.Bang)
+        }
         break
 
       case '/':
-        if (this.match('/')) {
-          while (this.peek() !== '\n' && !this.isAtEnd()) {
-            this.advance()
-          }
-        } else {
-          this.addToken(TokenType.Slash)
-        }
-
-      case ' ':
-      case '\t':
-      case '\r':
+        tok = this.createToken(TokenType.Slash)
         break
 
-      case '\n':
-        this.line++
+      case '*':
+        tok = this.createToken(TokenType.Asterisk)
+        break
+
+      case '<':
+        tok = this.createToken(TokenType.Lt)
+        break
+
+      case '>':
+        tok = this.createToken(TokenType.Gt)
+        break
+
+      case ';':
+        tok = this.createToken(TokenType.Semicolon)
+        break
+
+      case ':':
+        tok = this.createToken(TokenType.Colon)
+        break
+
+      case ',':
+        tok = this.createToken(TokenType.Comma)
+        break
+
+      case '{':
+        tok = this.createToken(TokenType.LBrace)
+        break
+
+      case '}':
+        tok = this.createToken(TokenType.RBrace)
+        break
+
+      case '(':
+        tok = this.createToken(TokenType.LParen)
+        break
+
+      case ')':
+        tok = this.createToken(TokenType.RParen)
         break
 
       case '"':
-        this.string()
+        let literal = this.readString()
+        tok = this.createToken(TokenType.String, literal)
+        break
+
+      case '[':
+        tok = this.createToken(TokenType.LBracket)
+        break
+
+      case ']':
+        tok = this.createToken(TokenType.RBracket)
+        break
+
+      case '\0':
+        tok = this.createToken(TokenType.Eof)
         break
 
       default:
-        if (isDigit(c)) {
-          this.number()
-        } else if (isAlpha(c)) {
-          this.identifier()
+        if (isLetter(this.ch)) {
+          let literal = this.readIdentifier()
+          let type = keywords.get(literal) ?? TokenType.Ident
+          tok = this.createToken(type, literal)
+          return tok
+        } else if (isDigit(this.ch)) {
+          let literal = this.readNumber()
+          tok = this.createToken(TokenType.Int, literal)
+          return tok
         } else {
-          this.errors.push(
-            formattedError(this.line, `Unexpected character '${c}'`),
-          )
+          tok = this.createToken(TokenType.Illegal, this.ch)
         }
     }
+
+    this.readChar()
+
+    return tok
   }
 
-  private identifier() {
-    while (isAlphaNumeric(this.peek())) this.advance()
-    const lexeme = this.source.slice(this.start, this.current)
-    if (keywords.has(lexeme)) {
-      this.addToken(keywords.get(lexeme)!)
-    } else {
-      this.addTokenLiteral(TokenType.Ident)
+  private skipWhitespace(): void {
+    while (isWhitespace(this.ch)) {
+      this.readChar()
     }
   }
 
-  private number() {
-    while (isDigit(this.peek())) this.advance()
-    this.addTokenLiteral(TokenType.Int)
-  }
-
-  private string() {
-    while (this.peek() !== '"' && !this.isAtEnd()) {
-      if (this.peek() == '\n') this.line++
-      this.advance()
-    }
-
+  private readChar(): void {
     if (this.isAtEnd()) {
-      this.errors.push(formattedError(this.line, 'Unterminated string'))
+      this.ch = '\0'
+    } else {
+      this.ch = this.input[this.peekPos]
     }
 
-    this.advance()
+    if (this.ch == '\n') {
+      this.line += 1
+    }
 
-    this.addTokenLiteral(TokenType.String)
+    this.curPos = this.peekPos
+    this.peekPos += 1
   }
 
-  private match(expected: string): boolean {
-    if (this.isAtEnd()) return false
-    if (this.source[this.current] !== expected) return false
-
-    this.current++
-    return true
+  private peekChar(): string {
+    return this.isAtEnd() ? '\0' : this.input[this.peekPos]
   }
 
-  private peek(): string {
-    if (this.isAtEnd()) return '\0'
-    return this.source[this.current]
+  private readIdentifier(): string {
+    let start = this.curPos
+    while (isLetter(this.ch)) {
+      this.readChar()
+    }
+    return this.input.slice(start, this.curPos)
   }
 
-  private advance(): string {
-    return this.source[this.current++]
+  private readNumber(): string {
+    let start = this.curPos
+    while (isDigit(this.ch)) {
+      this.readChar()
+    }
+    return this.input.slice(start, this.curPos)
   }
 
-  private addToken(type: TokenType) {
-    this.tokens.push(new Token(type, this.line))
-  }
-
-  private addTokenLiteral(type: TokenType) {
-    const literal = this.source.substring(this.start, this.current)
-    this.tokens.push(new Token(type, this.line, literal))
+  private readString(): string {
+    let start = this.curPos + 1
+    while (true) {
+      this.readChar()
+      if (this.ch == '"' || this.ch == '\0') {
+        break
+      }
+    }
+    return this.input.slice(start, this.curPos)
   }
 
   private isAtEnd(): boolean {
-    return this.current >= this.source.length
+    return this.peekPos >= this.input.length
+  }
+
+  private createToken(type: TokenType, literal?: string): Token {
+    return new Token(type, this.line, literal)
   }
 }
 
-/** Helper class to consume tokens */
-export class TokenIter {
-  private tokens: Token[]
-  private cur: number
-
-  constructor(tokens: Token[]) {
-    this.tokens = tokens
-    this.cur = 0
-  }
-
-  /**
-   * Returns next token from provied token array
-   *
-   * Once EOF is reached subsequent calls will return EOF token
-   */
-  next(): Token {
-    if (this.cur >= this.tokens.length) return this.tokens[this.cur - 1]
-    return this.tokens[this.cur++]
-  }
+function isLetter(ch: string): boolean {
+  return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_'
 }
 
-export function buildLexer(input: string) {
-  const lexer = new Lexer(input)
-  const tokens = lexer.scanTokens()
-  const errors = lexer.getErrors()
-  const tokenIter = new TokenIter(tokens)
-
-  return { tokenIter, errors }
+function isDigit(ch: string): boolean {
+  return '0' <= ch && ch <= '9'
 }
 
-function isDigit(c: string): boolean {
-  return c >= '0' && c <= '9'
-}
-
-function isAlpha(c: string): boolean {
-  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'
-}
-
-function isAlphaNumeric(c: string): boolean {
-  return isDigit(c) || isAlpha(c)
+function isWhitespace(ch: string): boolean {
+  return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'
 }

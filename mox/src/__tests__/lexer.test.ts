@@ -17,10 +17,9 @@ test('test keywords', () => {
   ]
 
   let l = new Lexer(input)
-  let tokens = l.scanTokens()
 
   for (let i = 0; i < tests.length; i++) {
-    let t = tokens[i]
+    let t = l.nextToken()
     assert.equal(t.type, tests[i].type)
   }
 })
@@ -34,10 +33,9 @@ test('test literals', () => {
   ]
 
   let l = new Lexer(input)
-  let tokens = l.scanTokens()
 
   for (let i = 0; i < tests.length; i++) {
-    let t = tokens[i]
+    let t = l.nextToken()
     assert.equal(t.type, tests[i].type)
   }
 })
