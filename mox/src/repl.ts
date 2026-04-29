@@ -1,5 +1,5 @@
 import readline from 'node:readline'
-import { buildLexer } from './lexer.js'
+import { Lexer } from './lexer.js'
 import { Parser } from './parser.js'
 import { Interpreter } from './interpreter.js'
 
@@ -23,15 +23,7 @@ export default async function repl() {
   while (true) {
     const input = await prompt()
 
-    const { tokenIter, errors } = buildLexer(input)
-    if (errors.length !== 0) {
-      for (const e of errors) {
-        console.error(e)
-      }
-      continue
-    }
-
-    const parser = new Parser(tokenIter)
+    const parser = new Parser(new Lexer(input))
     const program = parser.parse()
 
     if (parser.errors.length) {

@@ -1,7 +1,7 @@
 import * as stmt from './stmt.js'
 import * as expr from './expr.js'
 
-import { TokenIter } from './lexer.js'
+import { Lexer } from './lexer.js'
 import { Token, TokenType } from './token.js'
 import { Precedence, precedences } from './precedence.js'
 
@@ -12,7 +12,7 @@ type PrefixParseFn = () => Expr | null
 type InfixParseFn = (left: Expr) => Expr | null
 
 export class Parser {
-  private lexer: TokenIter
+  private lexer: Lexer
   private curToken: Token
   private peekToken: Token
   private prefixParseFns: Map<TokenType, PrefixParseFn>
@@ -20,7 +20,7 @@ export class Parser {
 
   public errors: string[]
 
-  public constructor(lexer: TokenIter) {
+  public constructor(lexer: Lexer) {
     this.lexer = lexer
     this.curToken = new Token(TokenType.Eof)
     this.peekToken = new Token(TokenType.Eof)
@@ -467,7 +467,7 @@ export class Parser {
 
   private nextToken() {
     this.curToken = this.peekToken
-    this.peekToken = this.lexer.next()
+    this.peekToken = this.lexer.nextToken()
   }
 
   private curTokenIs(type: TokenType): boolean {
