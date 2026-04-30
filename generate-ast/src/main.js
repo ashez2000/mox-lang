@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 
-function main(args: string[]) {
+function main(args) {
   if (args.length != 1) {
     console.log('Usage: generate-ast <output directory>')
     process.exit(64)
@@ -33,7 +33,7 @@ function main(args: string[]) {
   ])
 }
 
-function defineAst(outputDir: string, baseName: string, types: string[]) {
+function defineAst(outputDir, baseName, types) {
   const path = `${outputDir}/${baseName.toLowerCase()}.ts`
 
   let code = ''
@@ -65,7 +65,7 @@ function defineAst(outputDir: string, baseName: string, types: string[]) {
   fs.writeFileSync(path, code)
 }
 
-function defineType(baseName: string, className: string, fieldList: string) {
+function defineType(baseName, className, fieldList) {
   let code = ''
   code += `export class ${className} extends ${baseName} {\n`
   code += `constructor (`
@@ -82,7 +82,7 @@ function defineType(baseName: string, className: string, fieldList: string) {
   return code
 }
 
-function defineVisitor(baseName: string, types: string[]) {
+function defineVisitor(baseName, types) {
   let code = ''
   code += `export interface Visitor<T> {\n`
 
