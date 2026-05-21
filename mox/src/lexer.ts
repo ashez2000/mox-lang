@@ -22,71 +22,71 @@ export class Lexer {
       case '=':
         if (this.peekChar() == '=') {
           this.readChar()
-          tok = this.createToken(TokenType.Eq)
+          tok = this.createToken(TokenType.Eq, '==')
         } else {
-          tok = this.createToken(TokenType.Assign)
+          tok = this.createToken(TokenType.Assign, this.ch)
         }
         break
 
       case '+':
-        tok = this.createToken(TokenType.Plus)
+        tok = this.createToken(TokenType.Plus, this.ch)
         break
 
       case '-':
-        tok = this.createToken(TokenType.Minus)
+        tok = this.createToken(TokenType.Minus, this.ch)
         break
 
       case '!':
         if (this.peekChar() == '=') {
           this.readChar()
-          tok = this.createToken(TokenType.NotEq)
+          tok = this.createToken(TokenType.NotEq, this.ch)
         } else {
-          tok = this.createToken(TokenType.Bang)
+          tok = this.createToken(TokenType.Bang, this.ch)
         }
         break
 
       case '/':
-        tok = this.createToken(TokenType.Slash)
+        tok = this.createToken(TokenType.Slash, this.ch)
         break
 
       case '*':
-        tok = this.createToken(TokenType.Asterisk)
+        tok = this.createToken(TokenType.Asterisk, this.ch)
         break
 
       case '<':
-        tok = this.createToken(TokenType.Lt)
+        tok = this.createToken(TokenType.Lt, this.ch)
         break
 
       case '>':
-        tok = this.createToken(TokenType.Gt)
+        tok = this.createToken(TokenType.Gt, this.ch)
         break
 
       case ';':
-        tok = this.createToken(TokenType.Semicolon)
+        tok = this.createToken(TokenType.Semicolon, this.ch)
         break
 
       case ':':
-        tok = this.createToken(TokenType.Colon)
+        tok = this.createToken(TokenType.Colon, this.ch)
         break
 
       case ',':
-        tok = this.createToken(TokenType.Comma)
+        tok = this.createToken(TokenType.Comma, this.ch)
         break
 
       case '{':
-        tok = this.createToken(TokenType.LBrace)
+        tok = this.createToken(TokenType.LBrace, this.ch)
         break
 
       case '}':
-        tok = this.createToken(TokenType.RBrace)
+        tok = this.createToken(TokenType.RBrace, this.ch)
         break
 
       case '(':
-        tok = this.createToken(TokenType.LParen)
+        tok = this.createToken(TokenType.LParen, this.ch)
         break
 
       case ')':
-        tok = this.createToken(TokenType.RParen)
+        tok = this.createToken(TokenType.RParen, this.ch)
         break
 
       case '"':
@@ -95,15 +95,15 @@ export class Lexer {
         break
 
       case '[':
-        tok = this.createToken(TokenType.LBracket)
+        tok = this.createToken(TokenType.LBracket, this.ch)
         break
 
       case ']':
-        tok = this.createToken(TokenType.RBracket)
+        tok = this.createToken(TokenType.RBracket, this.ch)
         break
 
       case '\0':
-        tok = this.createToken(TokenType.Eof)
+        tok = this.createToken(TokenType.Eof, this.ch)
         break
 
       default:
@@ -182,8 +182,8 @@ export class Lexer {
     return this.peekPos >= this.input.length
   }
 
-  private createToken(type: TokenType, literal?: string): Token {
-    return new Token(type, this.line, literal)
+  private createToken(type: TokenType, literal: string): Token {
+    return new Token(type, literal, this.line)
   }
 }
 

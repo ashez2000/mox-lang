@@ -54,7 +54,7 @@ export const keywords = new Map<String, TokenType>([
 export class Token {
   constructor(
     public type: TokenType,
+    public literal: string,
     public line: number = 0,
-    public literal?: string,
   ) {}
 }
