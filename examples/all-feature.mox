@@ -1,0 +1,140 @@
+// Variables
+let x = 10;
+let y = 20;
+
+// Arithmetic
+let sum = x + y;
+let diff = y - x;
+let product = x * y;
+let quotient = y / x;
+
+// Booleans
+let t = true;
+let f = false;
+
+// Comparisons
+print(x < y);
+print(x > y);
+print(x == y);
+print(x != y);
+
+// Strings
+let first = "Hello";
+let second = "Monkey";
+let greeting = first + " " + second;
+print(greeting);
+
+// Arrays
+let arr = [1, 2, 3, 4, 5];
+
+print(first(arr));
+print(last(arr));
+print(len(arr));
+
+let arr2 = push(arr, 6);
+print(arr2);
+
+print(arr[0]);
+print(arr[4]);
+
+// Hash maps
+let person = {
+    "name": "Alice",
+    "age": 30,
+    "active": true
+};
+
+print(person["name"]);
+print(person["age"]);
+print(person["active"]);
+
+// If expressions
+if (x < y) {
+    print("x is less than y");
+} else {
+    print("x is greater than or equal to y");
+}
+
+// Function
+let add = fn(a, b) {
+    return a + b;
+};
+
+print(add(5, 7));
+
+// Higher-order function
+let apply = fn(f, a, b) {
+    return f(a, b);
+};
+
+print(apply(add, 10, 20));
+
+// Closure
+let makeAdder = fn(x) {
+    fn(y) {
+        x + y;
+    };
+};
+
+let addFive = makeAdder(5);
+print(addFive(10));
+
+// Recursion
+let factorial = fn(n) {
+    if (n == 0) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+};
+
+print(factorial(5));
+
+// Fibonacci
+let fib = fn(n) {
+    if (n < 2) {
+        return n;
+    }
+    return fib(n - 1) + fib(n - 2);
+};
+
+print(fib(10));
+
+// Builtins on strings
+print(len("monkey"));
+
+// Builtins on arrays
+print(rest(arr));
+print(push(arr, 100));
+
+// Function returning function
+let multiplier = fn(factor) {
+    fn(value) {
+        value * factor;
+    };
+};
+
+let timesThree = multiplier(3);
+print(timesThree(14));
+
+// Nested data structures
+let data = {
+    "numbers": [1, 2, 3],
+    "user": {
+        "name": "Bob",
+        "score": 99
+    }
+};
+
+print(data["numbers"][1]);
+print(data["user"]["name"]);
+print(data["user"]["score"]);
+
+// Null-producing branch
+let result = if (false) {
+    123;
+};
+
+print(result);
+
+// Final expression
+print("Program completed");
