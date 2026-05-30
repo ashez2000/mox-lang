@@ -22,7 +22,7 @@ export class Lexer {
   }
 
   nextToken(): Token {
-    let tok = Token.new(TokenType.EOF, '\0', this.line)
+    let tok = new Token(TokenType.Eof, '\0', this.line)
 
     this.skipWhitespace()
 
@@ -30,84 +30,84 @@ export class Lexer {
       case '=':
         if (this.peekChar() == '=') {
           this.readChar()
-          tok = Token.new(TokenType.EQ, '==', this.line)
+          tok = new Token(TokenType.Eq, '==', this.line)
         } else {
-          tok = Token.new(TokenType.ASSIGN, this.ch, this.line)
+          tok = new Token(TokenType.Assign, this.ch, this.line)
         }
         break
       case '!':
         if (this.peekChar() == '=') {
           this.readChar()
-          tok = Token.new(TokenType.NE, '!=', this.line)
+          tok = new Token(TokenType.NotEq, '!=', this.line)
         } else {
-          tok = Token.new(TokenType.BANG, this.ch, this.line)
+          tok = new Token(TokenType.Bang, this.ch, this.line)
         }
         break
       case ';':
-        tok = Token.new(TokenType.SEMICOLON, this.ch, this.line)
+        tok = new Token(TokenType.Semicolon, this.ch, this.line)
         break
       case ':':
-        tok = Token.new(TokenType.COLON, this.ch, this.line)
+        tok = new Token(TokenType.Colon, this.ch, this.line)
         break
       case '(':
-        tok = Token.new(TokenType.LPAREN, this.ch, this.line)
+        tok = new Token(TokenType.LParen, this.ch, this.line)
         break
       case ')':
-        tok = Token.new(TokenType.RPAREN, this.ch, this.line)
+        tok = new Token(TokenType.RParen, this.ch, this.line)
         break
       case '{':
-        tok = Token.new(TokenType.LBRACE, this.ch, this.line)
+        tok = new Token(TokenType.LBrace, this.ch, this.line)
         break
       case '}':
-        tok = Token.new(TokenType.RBRACE, this.ch, this.line)
+        tok = new Token(TokenType.RBrace, this.ch, this.line)
         break
       case '[':
-        tok = Token.new(TokenType.LBRACKET, this.ch, this.line)
+        tok = new Token(TokenType.LBracket, this.ch, this.line)
         break
       case ']':
-        tok = Token.new(TokenType.RBRACKET, this.ch, this.line)
+        tok = new Token(TokenType.RBracket, this.ch, this.line)
         break
       case ',':
-        tok = Token.new(TokenType.COMMA, this.ch, this.line)
+        tok = new Token(TokenType.Comma, this.ch, this.line)
         break
       case '+':
-        tok = Token.new(TokenType.PLUS, this.ch, this.line)
+        tok = new Token(TokenType.Plus, this.ch, this.line)
         break
       case '-':
-        tok = Token.new(TokenType.MINUS, this.ch, this.line)
+        tok = new Token(TokenType.Minus, this.ch, this.line)
         break
       case '*':
-        tok = Token.new(TokenType.ASTERISK, this.ch, this.line)
+        tok = new Token(TokenType.Asterisk, this.ch, this.line)
         break
       case '<':
-        tok = Token.new(TokenType.LT, this.ch, this.line)
+        tok = new Token(TokenType.Lt, this.ch, this.line)
         break
       case '>':
-        tok = Token.new(TokenType.GT, this.ch, this.line)
+        tok = new Token(TokenType.Gt, this.ch, this.line)
         break
       case '/':
-        tok = Token.new(TokenType.SLASH, this.ch, this.line)
+        tok = new Token(TokenType.Slash, this.ch, this.line)
         break
 
       case '"': // TODO: looks funny (line)
-        tok = Token.new(TokenType.STRING, this.readString(), this.line)
+        tok = new Token(TokenType.String, this.readString(), this.line)
         break
 
       case '\0':
-        tok = Token.new(TokenType.EOF, this.ch, this.line)
+        tok = new Token(TokenType.Eof, this.ch, this.line)
         break
 
       default:
         if (isLetter(this.ch)) {
           tok.literal = this.readIdentifier()
-          tok.type = keywords.get(tok.literal) ?? TokenType.IDENT
+          tok.type = keywords.get(tok.literal) ?? TokenType.Ident
           return tok
         } else if (isDigit(this.ch)) {
           tok.literal = this.readNumber()
-          tok.type = TokenType.INT
+          tok.type = TokenType.Int
           return tok
         } else {
-          tok = Token.new(TokenType.ILLEGAL, this.ch, this.line)
+          tok = new Token(TokenType.Illegal, this.ch, this.line)
         }
     }
 
@@ -172,14 +172,14 @@ export class Lexer {
 }
 
 const keywords = new Map<string, TokenType>([
-  ['fn', TokenType.FUNCTION],
-  ['let', TokenType.LET],
-  ['true', TokenType.TRUE],
-  ['false', TokenType.FALSE],
-  ['if', TokenType.IF],
-  ['else', TokenType.ELSE],
-  ['return', TokenType.RETURN],
-  ['print', TokenType.PRINT],
+  ['fn', TokenType.Function],
+  ['let', TokenType.Let],
+  ['true', TokenType.True],
+  ['false', TokenType.False],
+  ['if', TokenType.If],
+  ['else', TokenType.Else],
+  ['return', TokenType.Return],
+  ['print', TokenType.Print],
 ])
 
 function isLetter(ch: string): boolean {
