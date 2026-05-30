@@ -26,7 +26,7 @@ export const enum AstType {
 export type Ident = { type: AstType.Ident; name: Token }
 
 export type Stmt =
-  | { type: AstType.LetStmt; name: Token; value: Expr }
+  | { type: AstType.LetStmt; name: Token; expr: Expr }
   | { type: AstType.ReturnStmt; keyword: Token; expr: Expr }
   | { type: AstType.ExprStmt; expr: Expr }
   | { type: AstType.PrintStmt; expr: Expr }
