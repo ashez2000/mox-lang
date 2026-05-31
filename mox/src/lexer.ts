@@ -13,12 +13,8 @@ export class Lexer {
     this.readPosition = 0
     this.ch = '\0'
     this.line = 1
-  }
 
-  static new(input: string): Lexer {
-    const lexer = new Lexer(input)
-    lexer.readChar()
-    return lexer
+    this.nextToken()
   }
 
   nextToken(): Token {
