@@ -113,7 +113,71 @@ export class Parser {
   }
 
   private parseExpr(precedence: Precedence): Expr {
-    return { type: AstType.Null }
+    let leftExpr: Expr
+
+    switch (this.curToken.type) {
+      case TokenType.Ident:
+        leftExpr = this.parseIdent()
+        break
+
+      case TokenType.Int:
+        leftExpr = this.parseInt()
+        break
+
+      case TokenType.True:
+      case TokenType.False:
+        leftExpr = this.parseBool()
+        break
+
+      case TokenType.String:
+        leftExpr = this.parseString()
+        break
+
+      case TokenType.Bang:
+      case TokenType.Minus:
+        leftExpr = this.parsePrefixExpr()
+        break
+
+      case TokenType.LParen:
+        leftExpr = this.parseGroupedExpr()
+        break
+
+      default:
+        throw new Error(`[line: ${this.curToken.line}] error: no prefix parse fn for type ${this.curToken.type}`)
+    }
+
+    return leftExpr
+  }
+
+  private parseIdent(): Expr {
+    return { type: AstType.Ident, name: this.curToken }
+  }
+
+  private parseInt(): Expr {
+    return { type: AstType.Int, value: parseInt(this.curToken.literal) }
+  }
+
+  private parseBool(): Expr {
+    return { type: AstType.Bool, value: this.curToken.type == TokenType.True }
+  }
+
+  private parseString(): Expr {
+    return { type: AstType.String, value: this.curToken.literal }
+  }
+
+  private parsePrefixExpr(): Expr {
+    let op = this.curToken
+    this.nextToken()
+
+    let expr = this.parseExpr(Precedence.Prefix)
+    return { type: AstType.Prefix, op, expr }
+  }
+
+  private parseGroupedExpr(): Expr {
+    this.nextToken()
+    const expr = this.parseExpr(Precedence.Lowest)
+    this.expectPeek(TokenType.RParen)
+    return expr
   }
 
   private nextToken() {
