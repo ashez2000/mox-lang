@@ -154,6 +154,23 @@ export class Parser {
         throw new Error(`[line: ${this.curToken.line}] error: no prefix parse fn for type ${this.curToken.type}`)
     }
 
+    while (!this.peekTokenIs(TokenType.Semicolon) && precedence < this.peekPrecedence()) {
+      switch (this.peekToken.type) {
+        case TokenType.Plus:
+        case TokenType.Minus:
+        case TokenType.Asterisk:
+        case TokenType.Slash:
+        case TokenType.Eq:
+        case TokenType.NotEq:
+        case TokenType.Lt:
+        case TokenType.Gt:
+          leftExpr = this.parseInfix(leftExpr)
+          break
+        default:
+          return leftExpr
+      }
+    }
+
     return leftExpr
   }
 
@@ -179,6 +196,16 @@ export class Parser {
 
     let expr = this.parseExpr(Precedence.Prefix)
     return { type: AstType.Prefix, op, expr }
+  }
+
+  private parseInfix(left: Expr): Expr {
+    const op = this.curToken
+    const precedence = this.curPrecedence()
+
+    this.nextToken()
+    const right = this.parseExpr(precedence)
+
+    return { type: AstType.Infix, op, left, right }
   }
 
   private parseGroupedExpr(): Expr {
