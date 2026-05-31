@@ -1,4 +1,4 @@
-import { AstType, Stmt, Expr } from './ast.js'
+import { AstType, Stmt, Expr, Ident } from './ast.js'
 import { Lexer } from './lexer.js'
 import { Token, TokenType } from './token.js'
 
@@ -146,6 +146,10 @@ export class Parser {
         leftExpr = this.parseIfExpr()
         break
 
+      case TokenType.Function:
+        leftExpr = this.parseFnExpr()
+        break
+
       default:
         throw new Error(`[line: ${this.curToken.line}] error: no prefix parse fn for type ${this.curToken.type}`)
     }
@@ -153,7 +157,7 @@ export class Parser {
     return leftExpr
   }
 
-  private parseIdent(): Expr {
+  private parseIdent(): Ident {
     return { type: AstType.Ident, name: this.curToken }
   }
 
@@ -218,6 +222,40 @@ export class Parser {
     }
 
     return { type: AstType.If, condition, thenBlock }
+  }
+
+  private parseFnExpr(): Expr {
+    this.expectPeek(TokenType.LParen)
+    let parameters = this.parseFnParams()
+
+    this.expectPeek(TokenType.LBrace)
+    const body = this.parseBlock()
+
+    return { type: AstType.Function, parameters, body }
+  }
+
+  private parseFnParams(): Ident[] {
+    const idents: Ident[] = []
+
+    if (this.peekTokenIs(TokenType.RParen)) {
+      this.nextToken()
+      return idents
+    }
+
+    this.nextToken()
+    const ident = this.parseIdent()
+    idents.push(ident)
+
+    while (this.peekTokenIs(TokenType.Comma)) {
+      this.nextToken()
+      this.nextToken()
+      const ident = this.parseIdent()
+      idents.push(ident)
+    }
+
+    this.expectPeek(TokenType.RParen)
+
+    return idents
   }
 
   private nextToken() {
