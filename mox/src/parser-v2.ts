@@ -164,6 +164,7 @@ export class Parser {
         case TokenType.NotEq:
         case TokenType.Lt:
         case TokenType.Gt:
+          this.nextToken()
           leftExpr = this.parseInfix(leftExpr)
           break
         default:
