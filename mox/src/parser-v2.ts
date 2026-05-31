@@ -142,6 +142,10 @@ export class Parser {
         leftExpr = this.parseGroupedExpr()
         break
 
+      case TokenType.If:
+        leftExpr = this.parseIfExpr()
+        break
+
       default:
         throw new Error(`[line: ${this.curToken.line}] error: no prefix parse fn for type ${this.curToken.type}`)
     }
@@ -178,6 +182,42 @@ export class Parser {
     const expr = this.parseExpr(Precedence.Lowest)
     this.expectPeek(TokenType.RParen)
     return expr
+  }
+
+  private parseBlock(): Stmt[] {
+    const stmts: Stmt[] = []
+
+    this.nextToken()
+
+    while (!this.curTokenIs(TokenType.RBrace) && !this.curTokenIs(TokenType.Eof)) {
+      const stmt = this.parseStmt()
+      stmts.push(stmt)
+      this.nextToken()
+    }
+
+    return stmts
+  }
+
+  private parseIfExpr(): Expr {
+    this.expectPeek(TokenType.LParen)
+
+    this.nextToken()
+    let condition = this.parseExpr(Precedence.Lowest)
+
+    this.expectPeek(TokenType.RParen)
+    this.expectPeek(TokenType.LBrace)
+
+    let thenBlock = this.parseBlock()
+
+    if (this.peekTokenIs(TokenType.Else)) {
+      this.nextToken()
+      this.expectPeek(TokenType.LBrace)
+
+      let elseBlock = this.parseBlock()
+      return { type: AstType.If, condition, thenBlock, elseBlock }
+    }
+
+    return { type: AstType.If, condition, thenBlock }
   }
 
   private nextToken() {
