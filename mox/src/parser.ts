@@ -1,9 +1,9 @@
-import * as expr from './ast/expr'
-import * as stmt from './ast/stmt'
+import * as expr from './ast/expr.js'
+import * as stmt from './ast/stmt.js'
 
-import { Lexer } from './lexer'
-import { Token, TokenType } from './token'
-import { Precedence, precedences } from './precedence'
+import { Lexer } from './lexer.js'
+import { Token, TokenType } from './token.js'
+import { Precedence, precedences } from './precedence.js'
 
 type Stmt = stmt.Stmt
 type Expr = expr.Expr
