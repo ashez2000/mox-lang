@@ -1,6 +1,6 @@
-import { Ident } from './ast/expr'
-import { Block } from './ast/stmt'
-import { Environment } from './environment'
+import { Ident } from './ast/expr.js'
+import { Block } from './ast/stmt.js'
+import { Environment } from './environment.js'
 
 export enum ObjectType {
   INT = 'INT',
@@ -80,7 +80,11 @@ export class Return implements MoxObject {
 export class Func implements MoxObject {
   type: ObjectType = ObjectType.FUNC
 
-  constructor(public params: Ident[], public body: Block, public env: Environment) {}
+  constructor(
+    public params: Ident[],
+    public body: Block,
+    public env: Environment,
+  ) {}
 
   toString(): string {
     return `function`

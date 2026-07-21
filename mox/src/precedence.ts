@@ -1,4 +1,4 @@
-import { TokenType } from './token'
+import { TokenType } from './token.js'
 
 export enum Precedence {
   LOWEST = 0,

@@ -1,8 +1,8 @@
 import fs from 'node:fs'
 
-import { Lexer } from './lexer'
-import { Parser } from './parser'
-import { Interpreter } from './interpreter'
+import { Lexer } from './lexer.js'
+import { Parser } from './parser.js'
+import { Interpreter } from './interpreter.js'
 
 export default function run(path: string) {
   const input = fs.readFileSync(path, 'utf-8')

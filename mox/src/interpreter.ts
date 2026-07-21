@@ -1,8 +1,8 @@
-import * as stmt from './ast/stmt'
-import * as expr from './ast/expr'
-import * as object from './object'
-import builtin from './builtin'
-import { Environment } from './environment'
+import * as stmt from './ast/stmt.js'
+import * as expr from './ast/expr.js'
+import * as object from './object.js'
+import builtin from './builtin.js'
+import { Environment } from './environment.js'
 
 type MoxObject = object.MoxObject
 

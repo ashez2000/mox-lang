@@ -1,7 +1,8 @@
 import readline from 'node:readline'
-import { Lexer } from './lexer'
-import { Parser } from './parser'
-import { Interpreter } from './interpreter'
+
+import { Lexer } from './lexer.js'
+import { Parser } from './parser.js'
+import { Interpreter } from './interpreter.js'
 
 function prompt(): Promise<string> {
   const rl = readline.createInterface({

@@ -1,3 +1,3 @@
-export * from './lexer'
-export * from './parser'
-export * from './interpreter'
+export * from './lexer.js'
+export * from './parser.js'
+export * from './interpreter.js'

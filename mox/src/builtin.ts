@@ -1,4 +1,4 @@
-import * as object from './object'
+import * as object from './object.js'
 
 const clock = new object.Builtin(() => new object.Int(performance.now()))
 
