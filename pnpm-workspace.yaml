@@ -2,3 +2,5 @@ packages:
   - 'mox'
   - 'web'
   - 'generate-ast'
+allowBuilds:
+  esbuild: true
