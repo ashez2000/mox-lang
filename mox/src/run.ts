@@ -15,6 +15,6 @@ export default function run(path: string) {
     console.error(e)
   }
 
-  const interpreter = new Interpreter((v) => console.log(v))
+  const interpreter = new Interpreter()
   interpreter.interpret(program)
 }

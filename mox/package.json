@@ -1,11 +1,11 @@
 {
   "name": "mox",
   "version": "1.0.0",
-  "main": "./dist/lib.mjs",
+  "main": "./dist/lib.js",
   "scripts": {
     "start": "tsx ./src/main.ts",
     "test": "tsx --test ./src/tests/*",
-    "build": "tsup ./src/lib.ts --dts --format esm"
+    "build": "tsup ./src/lib.ts --format esm && tsc -p tsconfig.json"
   },
   "dependencies": {
     "@tsconfig/node24": "^24.0.4",
