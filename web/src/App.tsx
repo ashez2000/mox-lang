@@ -17,40 +17,129 @@ export default function App() {
 
   const evaluate = () => {
     const result = run(input)
+    console.log(input)
+
+    console.log(result)
     setOutput(result.output)
     setErrors(result.errors)
   }
 
   return (
-    <main className="max-w-7xl mx-auto p-3 font-mono">
-      <header className="mb-3">
-        <h1 className="text-4xl">Mox Lang v0.1.0</h1>
-      </header>
-
-      <div className="mb-3">
-        <button className="px-3 py-2 bg-zinc-200" onClick={evaluate}>
-          Evaluate
-        </button>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <textarea
-          className="p-3 border border-zinc-800 rounded outline-none"
-          style={{ height: '80vh' }}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-        />
-        <div className="p-3 border border-zinc-400 rounded">
+    <main className="min-h-screen bg-zinc-950 text-zinc-100">
+      <div className="max-w-7xl mx-auto p-6">
+        <header className="flex items-center justify-between mb-6">
           <div>
-            {errors.map((e) => (
-              <div className="text-red-600">{e}</div>
-            ))}
+            <h1 className="text-4xl font-bold tracking-tight">Mox Lang</h1>
+            <p className="text-zinc-400 mt-1">Toy Programming Language Playground</p>
           </div>
-          <div>
-            {output.map((e) => (
-              <div>{e}</div>
-            ))}
-          </div>
+
+          <span className="px-3 py-1 text-sm rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300">
+            v0.1.0
+          </span>
+        </header>
+
+        <div className="mb-4">
+          <button
+            onClick={evaluate}
+            className="
+              px-5 py-2.5
+              rounded-lg
+              bg-emerald-600
+              hover:bg-emerald-500
+              active:scale-[0.98]
+              transition
+              font-medium
+              shadow-lg shadow-emerald-900/30
+            "
+          >
+            ▶ Run Program
+          </button>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-5">
+          {/* Editor */}
+          <section className="rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900 shadow-xl">
+            <div className="px-4 py-3 border-b border-zinc-800 bg-zinc-900/80">
+              <h2 className="font-semibold text-zinc-200">Source Code</h2>
+            </div>
+
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              spellCheck={false}
+              className="
+                w-full
+                h-[80vh]
+                resize-none
+                bg-zinc-950
+                text-zinc-100
+                p-4
+                outline-none
+                font-mono
+                text-sm
+                leading-6
+              "
+            />
+          </section>
+
+          {/* Output */}
+          <section className="rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900 shadow-xl">
+            <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
+              <h2 className="font-semibold text-zinc-200">Output</h2>
+
+              {errors.length > 0 ? (
+                <span className="text-xs px-2 py-1 rounded bg-red-950 text-red-400 border border-red-800">
+                  {errors.length} error(s)
+                </span>
+              ) : (
+                <span className="text-xs px-2 py-1 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">
+                  Success
+                </span>
+              )}
+            </div>
+
+            <div className="h-[80vh] overflow-auto p-4 font-mono text-sm">
+              {errors.length > 0 && (
+                <div className="mb-6">
+                  <div className="text-red-400 font-semibold mb-2">Errors</div>
+
+                  <div className="space-y-2">
+                    {errors.map((err, i) => (
+                      <div
+                        key={i}
+                        className="
+                          p-3
+                          rounded-lg
+                          border
+                          border-red-900
+                          bg-red-950/40
+                          text-red-300
+                        "
+                      >
+                        {err}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <div className="text-zinc-400 font-semibold mb-2">Console</div>
+
+                {output.length === 0 && errors.length === 0 ? (
+                  <div className="text-zinc-500 italic">Run the program to see output...</div>
+                ) : (
+                  <div className="space-y-1">
+                    {output.map((line, i) => (
+                      <div key={i} className="text-zinc-200">
+                        {line}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </main>
