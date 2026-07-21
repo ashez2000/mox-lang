@@ -1,9 +1,10 @@
 import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
-import { Lexer } from '../lexer'
-import { Parser } from '../parser'
-import { Interpreter } from '../interpreter'
-import * as object from '../object'
+
+import { Lexer } from '../lexer.js'
+import { Parser } from '../parser.js'
+import { Interpreter } from '../interpreter.js'
+import * as object from '../object.js'
 
 type MoxObject = object.MoxObject
 

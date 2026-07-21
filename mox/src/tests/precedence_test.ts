@@ -1,10 +1,9 @@
 import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
 
-import { Lexer } from '../lexer'
-import { Parser } from '../parser'
-import printer from '../ast/printer'
-import { Expr } from '../ast/stmt'
+import { Lexer } from '../lexer.js'
+import { Parser } from '../parser.js'
+import printer from '../ast/printer.js'
 
 test('test operator precedece parsing', () => {
   // tests :: [[input, expected]]
