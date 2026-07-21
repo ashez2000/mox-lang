@@ -1,5 +1,5 @@
-import * as Stmt from './stmt'
-import * as Expr from './expr'
+import * as Stmt from './stmt.js'
+import * as Expr from './expr.js'
 
 class AstPrinter implements Stmt.Visitor<string>, Expr.Visitor<string> {
   printStmt(stmt: Stmt.Stmt) {
@@ -67,6 +67,18 @@ class AstPrinter implements Stmt.Visitor<string>, Expr.Visitor<string> {
   }
 
   visitCallExpr(expr: Expr.Call): string {
+    return ''
+  }
+
+  visitArrayExpr(expr: Expr.Array): string {
+    return ''
+  }
+
+  visitHashMapExpr(expr: Expr.HashMap): string {
+    return ''
+  }
+
+  visitIndexExpr(expr: Expr.Index): string {
     return ''
   }
 }
