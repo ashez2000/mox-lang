@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import run from './interpreter'
+import Editor from '@monaco-editor/react'
+import { evaluate } from 'mox'
 
 const example = `\
 let fib = fn (n) {
@@ -15,13 +16,10 @@ export default function App() {
   const [output, setOutput] = useState<string[]>([])
   const [errors, setErrors] = useState<string[]>([])
 
-  const evaluate = () => {
-    const result = run(input)
-    console.log(input)
-
-    console.log(result)
-    setOutput(result.output)
-    setErrors(result.errors)
+  const evaluateInput = () => {
+    let r = evaluate(input)
+    setOutput(r.stdout)
+    setErrors(r.errors)
   }
 
   return (
@@ -40,7 +38,7 @@ export default function App() {
 
         <div className="mb-4">
           <button
-            onClick={evaluate}
+            onClick={evaluateInput}
             className="
               px-5 py-2.5
               rounded-lg
@@ -63,22 +61,33 @@ export default function App() {
               <h2 className="font-semibold text-zinc-200">Source Code</h2>
             </div>
 
-            <textarea
+            <Editor
+              height="80vh"
+              defaultLanguage="plaintext"
+              theme="vs-dark"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              spellCheck={false}
-              className="
-                w-full
-                h-[80vh]
-                resize-none
-                bg-zinc-950
-                text-zinc-100
-                p-4
-                outline-none
-                font-mono
-                text-sm
-                leading-6
-              "
+              onChange={(value) => setInput(value ?? '')}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                fontFamily: 'JetBrains Mono, Fira Code, monospace',
+                lineNumbers: 'on',
+                roundedSelection: false,
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                wordWrap: 'off',
+                tabSize: 4,
+                insertSpaces: true,
+                padding: {
+                  top: 16,
+                  bottom: 16,
+                },
+                renderWhitespace: 'selection',
+                smoothScrolling: true,
+                bracketPairColorization: {
+                  enabled: true,
+                },
+              }}
             />
           </section>
 
