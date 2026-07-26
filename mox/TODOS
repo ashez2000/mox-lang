@@ -1,3 +1,5 @@
 - Complete ast printer
 - Add line number on runtime errors
-  - refactor error handling in interpreter
+- Refactor error handling in interpreter
+- Refactor lib/evaluate errors (Add runtime error to result.errors)
+- Add Synchronize to parser after error
