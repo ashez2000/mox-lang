@@ -25,6 +25,7 @@ export class Parser {
       try {
         let stmt = this.parseStmt()
         statements.push(stmt)
+        this.nextToken()
       } catch (e: any) {
         this.errors.push((e as Error).message)
         // TODO: Synchronize
@@ -37,10 +38,34 @@ export class Parser {
   private parseStmt(): Stmt {
     switch (this.curToken.type) {
       case TokenType.Let:
+        return this.parseLetStmt()
       case TokenType.Return:
+        return this.parseReturnStmt()
       default:
         return this.parseExprStmt()
     }
+  }
+
+  // let <ident> = <expr>;
+  private parseLetStmt(): Stmt {
+    this.expectPeek(TokenType.Ident)
+    let ident = this.curToken
+    this.expectPeek(TokenType.Assign)
+    let expr = this.parseExpr(Precedence.Lowest)
+    if (this.peekTokenIs(TokenType.Semicolon)) {
+      this.nextToken()
+    }
+    return { type: 'LetStmt', name: ident, value: expr }
+  }
+
+  // return <expr>;
+  private parseReturnStmt(): Stmt {
+    this.nextToken()
+    let expr = this.parseExpr(Precedence.Lowest)
+    if (this.peekTokenIs(TokenType.Semicolon)) {
+      this.nextToken()
+    }
+    return { type: 'ReturnStmt', value: expr }
   }
 
   private parseExprStmt(): Stmt {
@@ -49,6 +74,31 @@ export class Parser {
 
   private parseExpr(precedence: Precedence): Expr {
     return {}
+  }
+
+  //
+  // Util methods
+  //
+
+  private nextToken(): void {
+    this.curToken = this.peekToken
+    this.peekToken = this.tokenIter.next()
+  }
+
+  private curTokenIs(type: TokenType) {
+    return this.curToken.type == type
+  }
+
+  private peekTokenIs(type: TokenType) {
+    return this.peekToken.type == type
+  }
+
+  /* expectPeek consumes curToken if peekToken type matches else throws error **/
+  private expectPeek(type: TokenType): void {
+    if (!this.peekTokenIs(type)) {
+      throw new Error(`[line ${this.curToken.line}] Expected next token to be ${type}, got ${this.peekToken.type}`)
+    }
+    this.nextToken()
   }
 }
 

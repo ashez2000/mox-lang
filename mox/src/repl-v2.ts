@@ -1,6 +1,7 @@
 import readline from 'node:readline'
 
 import { Lexer } from './lexer-v2.js'
+import { Parser } from './parser-v2.js'
 
 function prompt(): Promise<string> {
   let rl = readline.createInterface({
@@ -28,8 +29,17 @@ export default async function repl() {
       continue
     }
 
-    for (let t of tokens) {
-      console.log(t)
+    let parser = new Parser(tokens)
+    let statements = parser.parse()
+    if (parser.errors.length != 0) {
+      for (let e of parser.errors) {
+        console.log(e)
+      }
+      continue
+    }
+
+    for (let s of statements) {
+      console.log(JSON.stringify(s))
     }
   }
 }
